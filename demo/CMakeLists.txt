@@ -1,0 +1,16 @@
+SET(damo_src
+	demo.c
+	)
+
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/src)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include)
+
+MESSAGE(STATUS "paho demo: ${PAHO_MQTT3a_LIB}")
+MESSAGE(STATUS "demo paho mqtt hints: ${PAHO_MQTT3c_LIB}")
+
+ADD_EXECUTABLE(demo ${damo_src})
+TARGET_LINK_LIBRARIES(demo
+	mapper-core
+	${PAHO_MQTT3a_LIB} 
+	${PAHO_MQTT3c_LIB}
+	${LIBS_SYSTEM})
