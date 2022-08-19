@@ -8,5 +8,5 @@
 response_msg* send_request(mapper_core* core, request_msg* req);
 int send_response(request_msg* req, char* code, char* payload);
 int mcore_register_protocol(mapper_core* core, char* mapper_id, char* spec);
-device_spec_meta* mcore_fetch_device_metadata(mapper_core* core, char* mapper_id);
+devices_spec_meta* mcore_fetch_device_metadata(mapper_core* core, char* mapper_id);
 #endif

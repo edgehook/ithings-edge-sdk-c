@@ -23,9 +23,7 @@ static void decode_device_properties_spec(cJSON* array, device_service_spec* svc
 
 	for(i = 0; i < svc->properties_size; i++){
 		obj = json_get_object_from_array(array, i);
-		if(!obj){
-			continue;
-		}
+		if(!obj) continue;
 
 		prop = &svc->properties[i];
 		tmp = json_get_string_from_object(obj, "pn");
@@ -115,27 +113,13 @@ static void decode_device_command_spec(cJSON* array, device_service_spec* svc){
 	}
 }
 
-device_spec_meta* decode_device_spec_meta(char* payload){
+static void decode_device_spec_metadata(device_spec_meta* meta, cJSON* object){
 	int i = 0;
 	char* tmp = NULL;
-	cJSON* array = json_parse(payload);
-	cJSON* object = NULL;
-	device_spec_meta* meta = malloc(sizeof(device_spec_meta));
+	cJSON* array = NULL;
 
-	if(!array || !meta) {
-		if(!array) json_delete(array);
-		if(!meta) free(meta);
-		return NULL;
-	}
-
-	memset(meta, 0, sizeof(device_spec_meta));
-	object = json_get_object_from_array(array, 0);
 	tmp = json_get_string_from_object(object, "id");
-	if(!tmp){
-		json_delete(object);
-		free(meta);
-		return NULL;
-	}
+	if(!tmp) return;
 	strncpy(meta->device_id, tmp, 47);
 
 	tmp = json_get_string_from_object(object, "os");
@@ -162,22 +146,13 @@ device_spec_meta* decode_device_spec_meta(char* payload){
 	meta->protocol = util_strdup(tmp);
 
 	array = json_get_object_from_object(object, "svcs");
-	if(!array){
-		json_delete(object);
-		return meta;
-	}
+	if(!array) return;
 
 	meta->size = json_get_array_size(array);
-	if(meta->size <= 0){
-		json_delete(object);
-		return meta;
-	}
+	if(meta->size <= 0) return;
 
 	meta->services = malloc(sizeof(device_service_spec)*meta->size);
-	if(!meta->services){
-		json_delete(object);
-		return meta;
-	}
+	if(!meta->services) return;
 
 	memset(meta->services, 0, sizeof(device_service_spec)*meta->size);
 	for(i = 0; i < meta->size; i++){
@@ -185,13 +160,10 @@ device_spec_meta* decode_device_spec_meta(char* payload){
 		device_service_spec* svc = &meta->services[i];
 
 		obj = json_get_object_from_array(array, i);
-		if(!obj){
-			continue;
-		}
+		if(!obj) continue;
 
 		tmp = json_get_string_from_object(obj, "name");
 		if(tmp == NULL) continue;
-
 		strncpy(svc->name, tmp, 63);
 
 		array = json_get_object_from_object(obj, "props");
@@ -207,8 +179,42 @@ device_spec_meta* decode_device_spec_meta(char* payload){
 			decode_device_command_spec(array, svc);
 		}
 	}
-	json_delete(object);
-	return meta;
+}
+
+devices_spec_meta* decode_devices_spec_meta(char* payload){
+	int i = 0;
+	int size;
+	char* tmp = NULL;
+	cJSON* array = json_parse(payload);
+	cJSON* object = NULL;
+	devices_spec_meta* metas = NULL;
+
+	if(!array)	return NULL;
+
+	size = sizeof(devices_spec_meta);
+	size += sizeof(device_spec_meta)*json_get_array_size(array);
+	metas = (devices_spec_meta*)malloc(size);
+	if(!metas){
+		json_delete(array);
+		return NULL;
+	}
+
+	memset(metas, 0, size);
+	metas->size = json_get_array_size(array);
+	metas->devices = (device_spec_meta*)((void*)metas + sizeof(devices_spec_meta));
+
+	for(i = 0; i < json_get_array_size(array); i++){
+		device_spec_meta* meta;
+
+		meta = &metas->devices[i];
+		object = json_get_object_from_array(array, i);
+		if(!object) continue;
+
+		decode_device_spec_metadata(meta, object);
+	}
+
+	json_delete(array);
+	return metas;
 }
 
 device_desired_twins_update_msg* decode_device_desired_twins_update_msg(char* payload){

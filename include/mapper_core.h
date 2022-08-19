@@ -19,7 +19,7 @@ typedef struct {
 void core_init(void);
 int mapper_core_init(char* svr_uri, char* usr, char* pwd, char* mapper_id);
 int register_protocol(char* mapper_id, char* spec);
-device_spec_meta* fetch_device_metadata(char* mapper_id);
+devices_spec_meta* fetch_device_metadata(char* mapper_id);
 void mapper_core_exit();
 
 #endif

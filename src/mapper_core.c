@@ -18,7 +18,7 @@ int register_protocol(char* mapper_id, char* spec){
 	return mcore_register_protocol(&mcore, mapper_id, spec);
 }
 
-device_spec_meta* fetch_device_metadata(char* mapper_id){
+devices_spec_meta* fetch_device_metadata(char* mapper_id){
 	return mcore_fetch_device_metadata(&mcore, mapper_id);
 }
 

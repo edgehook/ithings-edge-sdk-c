@@ -61,6 +61,11 @@ typedef struct{
 	int size;
 }device_spec_meta;
 
+typedef struct {
+	int size;
+	device_spec_meta* devices;
+}devices_spec_meta;
+
 typedef struct{
 	char service[64];
 	char property_name[128];
@@ -81,7 +86,7 @@ typedef struct{
 	twin_property* desired_twins;
 } device_desired_twins_update_msg;
 
-device_spec_meta* decode_device_spec_meta(char* payload);
+devices_spec_meta* decode_devices_spec_meta(char* payload);
 device_desired_twins_update_msg* decode_device_desired_twins_update_msg(char* payload);
 
 #endif

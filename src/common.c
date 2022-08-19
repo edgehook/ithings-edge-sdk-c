@@ -84,10 +84,10 @@ int mcore_register_protocol(mapper_core* core, char* mapper_id, char* spec){
 /*
 * fetch device metadata from server.
 */
-device_spec_meta* mcore_fetch_device_metadata(mapper_core* core, char* mapper_id){
+devices_spec_meta* mcore_fetch_device_metadata(mapper_core* core, char* mapper_id){
 	request_msg* req = NULL;
 	response_msg* resp = NULL;
-	device_spec_meta* dev_spec = NULL;
+	devices_spec_meta* devs_spec = NULL;
 
 	req = build_request(mapper_id, ITHINGS_OP_FETCH, ITHINGS_RSC_DEVICE_SPEC_META);
 	if(!req) return  NULL;
@@ -101,9 +101,9 @@ device_spec_meta* mcore_fetch_device_metadata(mapper_core* core, char* mapper_id
 	}
 
 	//decode the device_spec_meta
-	dev_spec = decode_device_spec_meta(resp->payload);
+	devs_spec = decode_devices_spec_meta(resp->payload);
 	free_response(&resp);
 
-	return dev_spec;
+	return devs_spec;
 }
 
