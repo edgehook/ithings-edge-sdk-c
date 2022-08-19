@@ -107,3 +107,38 @@ devices_spec_meta* mcore_fetch_device_metadata(mapper_core* core, char* mapper_i
 	return devs_spec;
 }
 
+//do real life control.
+int mcore_do_life_control(mapper_core* core, char* action, char* payload){
+	int ret = 0;
+	devices_spec_meta* devs_spec = decode_devices_spec_meta(payload);
+
+	if(!devs_spec) {
+		errorf("decode_devices_spec_meta failed \r\n");
+		return -5;
+	}
+
+	if(core->life_control){
+		ret = core->life_control(action, devs_spec);
+	}
+
+	return ret;
+}
+
+//set property's desried value
+int mcore_do_set_properties(mapper_core* core, char* payload){
+	int ret = 0;
+	device_desired_twins_update_msg* update_msg = NULL;
+
+	update_msg = decode_device_desired_twins_update_msg(payload);
+	if(!update_msg){
+		errorf("Decode Twin update msg failed \r\n");
+		return -5;
+	}
+
+	if(core->update_desired_twins){
+		ret = core->update_desired_twins(update_msg);
+	}
+
+	return ret;
+}
+

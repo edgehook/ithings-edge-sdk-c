@@ -12,8 +12,14 @@ typedef struct {
 
 	//callback.
 	int (*start_up)(void* context);
-	int (*life_control)(char* action, char* payload);
-	int (*update_desired_twins)(char* device_id, twin_property* desired_twins);
+	/*
+	* user should call free() to free the devs_spec by self.
+	*/
+	int (*life_control)(char* action, devices_spec_meta* devs_spec);
+	/*
+	* user should call free() to free the update_msg by self.
+	*/
+	int (*update_desired_twins)(device_desired_twins_update_msg* update_msg);
 } mapper_core;
 
 void core_init(void);

@@ -44,27 +44,14 @@ static void do_request(void* content){
 	request_msg* req = (request_msg*)content;
 
 	if(string_contain(req->operation, ITHINGS_OP_LIFE_CONTROL)){
-		if(core->life_control){
-			ret = core->life_control(req->resource, req->payload);
-		}
+		ret = mcore_do_life_control(core, req->resource, req->payload);
 		if(ret){
 			send_response(req, ITHINGS_RSP_INVALID_MSG, "error");
 		}else{
 			send_response(req, ITHINGS_RSP_SUCCEED, "{}");
 		}
 	}else if(string_contain(req->operation, ITHINGS_OP_SET_PROPERTY)){
-		device_desired_twins_update_msg* update_msg = NULL;
-		
-		update_msg = decode_device_desired_twins_update_msg(req->payload);
-		if(!update_msg){
-			errorf("Decode Twin update msg failed \r\n");
-			send_response(req, ITHINGS_RSP_INVALID_MSG, "decode twin update msg failed");
-			return;
-		}
-
-		if(core->update_desired_twins){
-			ret = core->update_desired_twins(update_msg->device_id, update_msg->desired_twins);
-		}
+		ret = mcore_do_set_properties(core, req->payload);
 		if(ret){
 			send_response(req, ITHINGS_RSP_INVALID_MSG, "update desired twins error");
 		}else{
@@ -73,6 +60,9 @@ static void do_request(void* content){
 	}else{
 		send_response(req, ITHINGS_RSP_OPERATION_NOT_FOUND, "operation not found");
 	}
+
+	//we should free the request.
+	free_request(&req);
 }
 
 static thread_return_type WINAPI do_process_requests(void* context){

@@ -33,5 +33,6 @@ JSON_BOOL json_get_bool_from_array(const cJSON *array, int index, const JSON_BOO
 double json_get_double_from_array(const cJSON *array, int index, const double defaultValue);
 char* json_get_string_from_array(const cJSON *array, int index);
 cJSON* json_get_object_from_array(const cJSON *array, int index);
-
+int json_is_array(const cJSON * const item);
+int json_is_object(const cJSON * const item);
 #endif

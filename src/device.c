@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include <device.h>
+#include <util/log.h>
 #include <util/util.h>
 #include <util/json_util.h>
 
@@ -191,17 +192,43 @@ devices_spec_meta* decode_devices_spec_meta(char* payload){
 
 	if(!array)	return NULL;
 
+	if(json_is_object(array)){
+		device_spec_meta* meta;
+
+		//it's object.
+		object = array;
+		size = sizeof(devices_spec_meta) + sizeof(device_spec_meta);
+		metas = (devices_spec_meta*)malloc(size);
+		if(!metas){
+			errorf("no more system memory, then malloc failed! \r\n");
+			json_delete(array);
+			return NULL;
+		}
+
+		memset(metas, 0, size);
+		metas->size = 1;
+		metas->devices = (device_spec_meta*)((char*)metas + sizeof(devices_spec_meta));
+		meta = &metas->devices[0];
+
+		decode_device_spec_metadata(meta, object);
+
+		json_delete(array);
+		return metas;
+	}
+
+	//this is array.
 	size = sizeof(devices_spec_meta);
 	size += sizeof(device_spec_meta)*json_get_array_size(array);
 	metas = (devices_spec_meta*)malloc(size);
 	if(!metas){
+		errorf("no more system memory, then malloc failed! \r\n");
 		json_delete(array);
 		return NULL;
 	}
 
 	memset(metas, 0, size);
 	metas->size = json_get_array_size(array);
-	metas->devices = (device_spec_meta*)((void*)metas + sizeof(devices_spec_meta));
+	metas->devices = (device_spec_meta*)((char*)metas + sizeof(devices_spec_meta));
 
 	for(i = 0; i < json_get_array_size(array); i++){
 		device_spec_meta* meta;
@@ -217,55 +244,140 @@ devices_spec_meta* decode_devices_spec_meta(char* payload){
 	return metas;
 }
 
+void destory_devices_spec_meta(devices_spec_meta* meta){
+	if(!meta) return;
+
+	if(meta->devices){
+		int size, i,j;
+
+		size = meta->size;
+		for(i = 0; i < size; i++){
+			device_spec_meta* dev = &meta->devices[i];
+
+			if(!dev->services) continue;
+
+			for(j = 0; j < dev->size; j++){
+				device_service_spec* svc = &dev->services[i];
+
+				if(svc->properties) {
+					free(svc->properties);
+					svc->properties = NULL;
+				}
+
+				if(svc->events){
+					free(svc->events);
+					svc->events = NULL;
+				}
+
+				if(svc->commands){
+					free(svc->commands);
+					svc->commands = NULL;
+				}
+
+				free(dev->services);
+			}
+		}
+	}
+
+	free(meta);
+}
+
 device_desired_twins_update_msg* decode_device_desired_twins_update_msg(char* payload){
 	int i = 0;
+	int size, count;
 	char* device_id = NULL;
 	cJSON* object = json_parse(payload);
 	cJSON* array = NULL;
 	device_desired_twins_update_msg* update_msg = NULL;
 
-	if(object == NULL) return  NULL;
+	if(object == NULL) return NULL;
 
-	update_msg = (device_desired_twins_update_msg*)malloc(sizeof(device_desired_twins_update_msg));
+	device_id = json_get_string_from_object(object, "d_id");
+	if(!device_id){
+		errorf("d_id is not in the json string! \r\n");
+		json_delete(object);
+		return NULL;
+	}
+	array = json_get_object_from_object(object, "desired_twins");
+
+	count = json_get_array_size(array);
+	size = sizeof(device_desired_twins_update_msg);
+	if(count > 0) size += count* sizeof(twin_property);
+
+	update_msg = (device_desired_twins_update_msg*)malloc(size);
 	if(!update_msg){
 		json_delete(object);
 		return NULL;
 	}
 
-	device_id = json_get_string_from_object(object, "d_id");
+	memset(update_msg, 0, size);
 	strncpy(update_msg->device_id, device_id, 47);
-
-	array = json_get_object_from_object(object, "desired_twins");
-	if(!array){
-		json_delete(object);
-		free(update_msg);
-		return  NULL;
+	update_msg->size = count;
+	if(count > 0){
+		update_msg->desired_twins = (twin_property*)((char*)update_msg + sizeof(device_desired_twins_update_msg));
 	}
 
-	for(i = 0 ; i < json_get_array_size(array); i++){
-		char* svc = NULL;
-		char* pn = NULL;
-		cJSON* obj = NULL;
+	if(array){
+		for(i = 0 ; i < count; i++){
+			char* tmp = NULL;
+			cJSON* obj = NULL;
+			twin_property* twins = &update_msg->desired_twins[i];
 
-		obj = json_get_object_from_array(array, i);
-		if(!obj){
-			continue;
-		}
+			obj = json_get_object_from_array(array, i);
+			if(!obj) continue;
 
-		svc = json_get_string_from_object(obj, "svc");
-		pn = json_get_string_from_object(obj, "pn");
-		if(svc && pn){
-			twin_property* twin = (twin_property*)malloc(sizeof(twin_property));
-			if(twin){
-				strncpy(twin->service, svc, 63);
-				strncpy(twin->property_name, pn, 127);
+			tmp = json_get_string_from_object(obj, "svc");
+			if(!tmp) continue;
+			strncpy(twins->service, tmp, 63);
 
-				//list_push_tail(update_msg->desired_twins, twin, sizeof(twin_property));
+			tmp = json_get_string_from_object(obj, "pn");
+			if(!tmp) continue;
+			strncpy(twins->property_name, tmp, 127);
+			//decode val.
+			object = json_get_object_from_object(obj, "val");
+			if(object){
+				switch((object->type & 0xFF)){
+				case cJSON_Number:
+					twins->value = util_doubledup(object->valuedouble);
+					break;
+				case cJSON_Raw:
+				case cJSON_String:
+					twins->value = util_strdup(object->valuestring);
+					break;
+				case cJSON_False:
+				case cJSON_True:
+					twins->value = util_intdup(object->valueint);
+					break;
+				default:
+					twins->value = NULL;
+					break;
+				}
+			}
+
+			twins->timestamp = json_get_int_from_object(obj, "ts", 0);
+			tmp = json_get_string_from_object(obj, "err_msg");
+			if(tmp){
+				strncpy(twins->err_msg, tmp, 127);
 			}
 		}
 	}
 
+	json_delete(object);
 	return update_msg;
 }
 
+void destory_device_desired_twins_update_msg(device_desired_twins_update_msg* msg){
+	int i = 0;
+	if(!msg) return;
 
+	if(msg->desired_twins){
+		for(i = 0; i < msg->size; i++){
+			twin_property* twin = &msg->desired_twins[i];
+
+			if(twin->value)
+				free(twin->value);
+		}
+	}
+
+	free(msg);
+}

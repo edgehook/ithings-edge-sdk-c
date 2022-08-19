@@ -113,3 +113,10 @@ char* json_get_string_from_array(const cJSON *array, int index) {
 cJSON* json_get_object_from_array(const cJSON *array, int index) {
 	return (cJSON*) cJSON_GetArrayItem((const cJSON*) array, index);
 }
+
+int json_is_array(const cJSON * const item){
+	return (int)cJSON_IsArray(item);
+}
+int json_is_object(const cJSON * const item){
+	return (int)cJSON_IsObject(item);
+}

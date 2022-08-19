@@ -70,7 +70,7 @@ typedef struct{
 	char service[64];
 	char property_name[128];
 	void* value;
-	long long timestamp;
+	int timestamp;
 	char err_msg[128];
 	int writeable;
 	double max;
@@ -87,6 +87,8 @@ typedef struct{
 } device_desired_twins_update_msg;
 
 devices_spec_meta* decode_devices_spec_meta(char* payload);
+void destory_devices_spec_meta(devices_spec_meta* meta);
 device_desired_twins_update_msg* decode_device_desired_twins_update_msg(char* payload);
+void destory_device_desired_twins_update_msg(device_desired_twins_update_msg* msg);
 
 #endif

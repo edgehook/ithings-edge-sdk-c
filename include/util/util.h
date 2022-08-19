@@ -10,6 +10,8 @@ int64_t get_time(void);
 void gen_rand_uuid_str(char *uuid_str, int str_format);
 
 char* util_strdup(const char* str);
+int* util_intdup(int i);
+double* util_doubledup(double d);
 void free_memory(char **str);
 int util_strlen(char *str);
 char* get_client_timestamp();

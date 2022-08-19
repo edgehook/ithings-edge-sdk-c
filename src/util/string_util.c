@@ -17,7 +17,20 @@ char* util_strdup(const char* str){
 		return NULL;
 
 	return strdup(str);
-} 
+}
+
+double* util_doubledup(double d){
+	double* p = (double*)malloc(sizeof(double));	
+	if(p) *p = d;
+	return p;
+}
+
+int* util_intdup(int i){
+	int* p = (int*)malloc(sizeof(int));
+	if(p) *p = i;
+	return p;
+}
+
 int util_strlen(char *str) {
 	if (str == NULL) {
 		return 0;
