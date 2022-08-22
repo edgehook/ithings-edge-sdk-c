@@ -3,6 +3,13 @@
 SRC_ROOT=${PWD}
 MQTT_INSTALL_PATH=$SRC_ROOT
 
+[ -f Makefile ] && make clean
+rm -rf Makefile CMakeFiles CMakeCache.txt cmake_install.cmake \
+CPackConfig.cmake CPackSourceConfig.cmake src/CMakeFiles src/Makefile \
+src/CMakeCache.txt src/cmake_install.cmake src/CPackConfig.cmake \
+src/CPackSourceConfig.cmake src/*.so demo/CMakeFiles demo/Makefile \
+demo/cmake_install.cmake
+
 cd 3rdparty/paho.mqtt.c/
 
 # clean the make 
@@ -30,4 +37,9 @@ make && make install
 if [ "$?" != 0 ];then
 	echo "make or make intsall failed"
 	exit 1
-fi 
+fi
+
+cd  ${SRC_ROOT}
+cmake .
+
+make

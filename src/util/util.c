@@ -5,6 +5,8 @@
 #else
 #include <unistd.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/select.h>
 #endif
 
 void util_sleep(uint64_t milliseconds){
@@ -14,6 +16,17 @@ void util_sleep(uint64_t milliseconds){
 	usleep((useconds_t)(milliseconds*1000));
 #endif
 }
+
+void util_sleep_v2(long milliseconds){
+	struct timeval tv;
+
+	if(!milliseconds) return;
+
+	tv.tv_sec = milliseconds / 1000;
+	tv.tv_usec = (milliseconds % 1000) * 1000; /* this field is microseconds! */
+	(void)select(0, NULL, NULL, NULL, &tv);
+}
+
 
 int64_t get_time(void){
 #if defined(_WIN32)

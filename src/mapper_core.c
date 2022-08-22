@@ -81,6 +81,30 @@ static thread_return_type WINAPI do_process_requests(void* context){
 	}
 }
 
+static thread_return_type WINAPI do_keep_alive(void* context){
+	mapper_core* core = (mapper_core*)context;
+
+	while(1){
+		if(core->stopped) return 0;
+
+		if(core->keep_alive)
+			core->keep_alive();
+
+		util_sleep_v2(core->keep_alive_time);
+	}
+}
+
+void mapper_core_setup(int keep_alive_time, int (*start_up)(void* context),
+	int (*life_control)(char* action, devices_spec_meta* devs_spec),
+	int (*update_desired_twins)(device_desired_twins_update_msg* update_msg),
+	void (*keep_alive)(void)){
+
+	mcore.keep_alive_time = keep_alive_time;
+	mcore.start_up = start_up;
+	mcore.life_control = life_control;
+	mcore.update_desired_twins = update_desired_twins;
+	mcore.keep_alive = keep_alive;
+}
 int mapper_core_init(char* svr_uri, char* usr, char* pwd, char* mapper_id){
 	int ret = 0;
 	
@@ -105,10 +129,13 @@ int mapper_core_init(char* svr_uri, char* usr, char* pwd, char* mapper_id){
 		transport_destory();
 		return -1;
 	}
-	
+
+	//start process thread.
 	Thread_start(do_process_response, &mcore);
 	//start process request thread.
 	Thread_start(do_process_requests, &mcore);
+	//start keepalive thread.
+	Thread_start(do_keep_alive, &mcore);
 
 	//do start up function.
 	if(mcore.start_up)

@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 void util_sleep(uint64_t milliseconds);
+void util_sleep_v2(long milliseconds);
+
 int64_t get_time(void);
 
 //for uuid v4.
