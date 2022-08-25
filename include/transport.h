@@ -46,9 +46,12 @@ typedef struct {
   blocked_queue*		resp_queue;
   blocked_queue*		tx_queue;
   int				stopped;
+  void	(*on_connected)(void);
+  void	(*on_lost)(void);
 } transport;
 
 int transport_init(char* svr_uri, char* usr, char* pwd, char* mapper_id);
+int transport_connect(void (*oc)(void), void (*ol)(void));
 void send_async_message(void* message, size_t size);
 request_msg* get_request_message(void);
 response_msg* get_response_message(void);

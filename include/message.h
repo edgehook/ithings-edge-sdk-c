@@ -37,6 +37,7 @@ typedef struct {
 #define ITHINGS_RSC_MAPPER          	"mapper"
 #define ITHINGS_RSC_DEVICE_DATA     	"device_data"
 #define ITHINGS_RSC_DEVICE_EVENT    	"device_event"
+#define ITHINGS_RSC_EVENT_RECOVER    	"event_recover"
 #define ITHINGS_RSC_DEVICE_STATUS    	"device_status"
 #define ITHINGS_RSC_DEVICE_SPEC_META  	"device_spec_meta"
 #define ITHINGS_RSC_DESIRED_TWINS    	"desired_twins"

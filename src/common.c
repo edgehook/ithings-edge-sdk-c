@@ -4,7 +4,6 @@
 #include "util/json_util.h"
 #include <util/event_listener.h>
 
-
 #define RESPONSE_TIME    (5000UL)
 
 response_msg* send_request(mapper_core* core, request_msg* req){
@@ -142,3 +141,74 @@ int mcore_do_set_properties(mapper_core* core, char* payload){
 	return ret;
 }
 
+int mcore_send_keepalive_msg(mapper_core* core, char* mapper_id, devices_status_message* msg){
+	request_msg* req = NULL;
+	response_msg* resp = NULL;
+	char* payload = encode_devices_status_message(msg);
+
+	if(!payload) return -1;
+
+	req	= build_report_request(mapper_id, ITHINGS_RSC_DEVICE_STATUS);
+	if(!req){
+		free(payload);
+		return -2;
+	}
+	request_set_payload(req, payload, util_strlen(payload));
+
+	//send request and check response.
+	resp = send_request(core, req);
+	if(!resp)	return -5;
+
+	if(!string_contain(resp->code, ITHINGS_RSP_SUCCEED)){
+		free_response(&resp);
+		return -6;
+	}
+
+	free_response(&resp);
+	return 0;
+}
+
+int mcore_do_device_report(mapper_core* core, device_report_msg* msg){
+	request_msg* req = NULL;
+	response_msg* resp = NULL;
+	char* payload = NULL;
+
+	if(msg->props_report_msg){
+		payload = encode_devices_props_report_msg(msg->props_report_msg);
+		if(!payload) return -1;
+
+		req = build_report_request(core->mapper_id, ITHINGS_RSC_DEVICE_DATA);
+		if(!req){
+			free(payload);
+			return -2;
+		}
+		request_set_payload(req, payload, util_strlen(payload));
+	}else if(msg->events_report_msg){
+		payload = encode_device_events_report_msg(msg->events_report_msg);
+		if(!payload) return -1;
+
+		if(msg->events_report_msg->payload[0]){
+			req = build_report_request(core->mapper_id, ITHINGS_RSC_DEVICE_EVENT);
+		}else{
+			//recovery
+			req = build_report_request(core->mapper_id, ITHINGS_RSC_EVENT_RECOVER);
+		}
+		if(!req){
+			free(payload);
+			return -2;
+		}
+		request_set_payload(req, payload, util_strlen(payload));
+	}
+
+	//send request and check response.
+	resp = send_request(core, req);
+	if(!resp)	return -5;
+
+	if(!string_contain(resp->code, ITHINGS_RSP_SUCCEED)){
+		free_response(&resp);
+		return -6;
+	}
+
+	free_response(&resp);
+	return 0;
+}

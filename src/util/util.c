@@ -42,3 +42,22 @@ int64_t get_time(void){
 #endif
 }
 
+long long get_timestamp(void){
+#if defined(_WIN32)
+	FILETIME ft;
+	long long t;
+
+	GetSystemTimeAsFileTime(&ft);
+	t = ((long long)ft.dwHighDateTime) << 32) + ft.dwLowDateTime;
+	t -= 116444736000000000;
+	t = t/10000000;
+	return t;
+#else
+	struct timeval tv;
+
+	gettimeofday(&tv,NULL);
+
+	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+#endif	
+}
+

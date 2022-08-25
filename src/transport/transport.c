@@ -28,7 +28,7 @@ static thread_return_type WINAPI msg_publish_thread(void* context){
 	tx_queue = t->tx_queue;
 
 	while(1){
-		content = blocked_queue_pop(tx_queue, 10);
+		content = blocked_queue_pop(tx_queue, 1000);
 		if(content == NULL)
 			continue;
 
@@ -44,13 +44,16 @@ static thread_return_type WINAPI msg_publish_thread(void* context){
 }
 
 static void on_transport_connlost (void* context, char* cause){
-	mqtt_transport* trans = (mqtt_transport*)context;
+	transport* t = (transport*)context;
 
 	/*
 	* If the connection is lost, then we will retry to connect the broker until connected
 	* the server.
 	*/
 	warningf("connect lost with the reason (%s), we retry...", cause);
+	if(t->on_lost)
+		t->on_lost();
+
 	transport_retry_connect();
 }
 
@@ -126,8 +129,7 @@ int transport_init(char* svr_uri, char* usr, char* pwd, char* mapper_id){
 	//start tx thread.
 	Thread_start(msg_publish_thread, &tp);
 	
-	//retry to connect the mqtt broker.
-	return transport_retry_connect();
+	return 0;
 }
 
 int transport_retry_connect(){
@@ -157,7 +159,19 @@ retry_connect:
 
 	infof("subscribe topic %s successfully!\r\n", topic);
 	free_memory(&topic);
+
+	//do on_connected callback.
+	if(tp.on_connected)
+		tp.on_connected();
+
 	return 0;
+}
+
+int transport_connect(void (*oc)(void), void (*ol)(void)){
+	tp.on_connected = oc;
+	tp.on_lost = ol;
+
+	return transport_retry_connect();
 }
 
 int send_message(mqtt_transport* trans, void* content){
@@ -198,11 +212,11 @@ void send_async_message(void* message, size_t size){
 }
 
 request_msg* get_request_message(void){
-	return blocked_queue_pop(tp.req_queue, 10);
+	return blocked_queue_pop(tp.req_queue, 1000);
 }
 
 response_msg* get_response_message(void){
-	return blocked_queue_pop(tp.resp_queue, 10);
+	return blocked_queue_pop(tp.resp_queue, 1000);
 }
 
 int transport_publish(mqtt_transport* trans, char* topic, char*payload, int payloadlen){

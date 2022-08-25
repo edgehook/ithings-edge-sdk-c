@@ -5,14 +5,20 @@
 #include <util/thread_pool.h>
 #include <util/event_listener.h>
 
+#define DEVICE_STATUS_ONLINE  	"online"
+#define DEVICE_STATUS_OFFLINE 	"offline"
+
 typedef struct {
 	int				keep_alive_time; //by ms
 	int         	stopped;
+	int				connected;
+	char* 			mapper_id;		//mapper_id.
 	el_manager* 	el_mgr;
 	thread_pool* 	th_pool;
+	blocked_queue*	report_msg_queue;
 
 	//callback.
-	int (*start_up)(void* context);
+	int (*on_connected)(void* context);
 	/*
 	* user should call free() to free the devs_spec by self.
 	*/
@@ -26,13 +32,17 @@ typedef struct {
 } mapper_core;
 
 void core_init(void);
-void mapper_core_setup(int keep_alive_time, int (*start_up)(void* context),
+void mapper_core_setup(int (*on_connected)(void* context),
 	int (*life_control)(char* action, devices_spec_meta* devs_spec),
 	int (*update_desired_twins)(device_desired_twins_update_msg* update_msg),
 	void (*keep_alive)(void));
-int mapper_core_init(char* svr_uri, char* usr, char* pwd, char* mapper_id);
-int register_protocol(char* mapper_id, char* spec);
-devices_spec_meta* fetch_device_metadata(char* mapper_id);
+int mapper_core_init(char* svr_uri, char* usr, char* pwd,
+			char* mapper_id, int pool_capacity, int keepalive_time);
+int mapper_core_connect();
+int register_protocol(char* spec);
+devices_spec_meta* fetch_device_metadata(void);
+int send_keepalive_msg(devices_status_message* msg);
+void send_device_report_msg(device_report_msg* msg);
 void mapper_core_exit();
 
 #endif

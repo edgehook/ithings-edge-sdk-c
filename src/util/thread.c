@@ -194,7 +194,7 @@ int Thread_wait_sem(sem_type sem, int timeout){
 	if (rc != 0)
 		rc = ETIMEDOUT;
 #elif defined(USE_TRYWAIT)
-	while (++i < count && (rc = sem_trywait(sem)) != 0)	{
+	while (i++ < count && (rc = sem_trywait(sem)) != 0)	{
 		if (rc == -1 && ((rc = errno) != EAGAIN))
 		{
 			rc = 0;

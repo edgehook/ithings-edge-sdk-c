@@ -7,6 +7,7 @@ void util_sleep(uint64_t milliseconds);
 void util_sleep_v2(long milliseconds);
 
 int64_t get_time(void);
+long long get_timestamp(void);
 
 //for uuid v4.
 void gen_rand_uuid_str(char *uuid_str, int str_format);

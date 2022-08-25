@@ -86,9 +86,51 @@ typedef struct{
 	twin_property* desired_twins;
 } device_desired_twins_update_msg;
 
+typedef struct {
+	char device_id[48];
+	char status[64];
+	char err_msg[128];
+	int  timestamp;
+}device_status_msg;
+
+typedef struct {
+	int size;
+	device_status_msg* devices;
+}devices_status_message;
+
+typedef struct {
+	char device_id[48];
+	int size;
+	twin_property* twin_properties;
+}report_device_props_msg;
+
+typedef struct {
+	int size;
+	report_device_props_msg* devices;
+}devices_props_report_msg;
+
+typedef struct {
+	char device_id[48];
+	char service[64];
+	char event_name[128];
+	char* payload;
+	int  timestamp;
+	char err_msg[128];
+}device_events_report_msg;
+
+typedef struct {
+	devices_props_report_msg* props_report_msg;
+	device_events_report_msg* events_report_msg;
+}device_report_msg;
+
 devices_spec_meta* decode_devices_spec_meta(char* payload);
 void destory_devices_spec_meta(devices_spec_meta* meta);
 device_desired_twins_update_msg* decode_device_desired_twins_update_msg(char* payload);
 void destory_device_desired_twins_update_msg(device_desired_twins_update_msg* msg);
+char* encode_devices_status_message(devices_status_message* msg);
+char* encode_devices_props_report_msg(devices_props_report_msg* msg);
+char* encode_device_events_report_msg(device_events_report_msg* msg);
+char* encode_device_report_msg(device_report_msg* msg);
+void destory_device_report_msg(device_report_msg* msg);
 
 #endif

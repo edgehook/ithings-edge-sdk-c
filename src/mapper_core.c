@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #if !defined(_WINDOWS)
 #define WINAPI
 #else
@@ -14,12 +15,16 @@
 
 static mapper_core mcore;
 
-int register_protocol(char* mapper_id, char* spec){
-	return mcore_register_protocol(&mcore, mapper_id, spec);
+int register_protocol(char* spec){
+	return mcore_register_protocol(&mcore, mcore.mapper_id, spec);
 }
 
-devices_spec_meta* fetch_device_metadata(char* mapper_id){
-	return mcore_fetch_device_metadata(&mcore, mapper_id);
+devices_spec_meta* fetch_device_metadata(void){
+	return mcore_fetch_device_metadata(&mcore, mcore.mapper_id);
+}
+
+int send_keepalive_msg(devices_status_message* msg){
+	return mcore_send_keepalive_msg(&mcore, mcore.mapper_id, msg);
 }
 
 static thread_return_type WINAPI do_process_response(void* context){
@@ -87,46 +92,88 @@ static thread_return_type WINAPI do_keep_alive(void* context){
 	while(1){
 		if(core->stopped) return 0;
 
-		if(core->keep_alive)
+		if(core->keep_alive && core->connected)
 			core->keep_alive();
 
 		util_sleep_v2(core->keep_alive_time);
 	}
 }
+static thread_return_type WINAPI do_device_report(void* context){
+	int ret;
+	device_report_msg* msg = NULL;
+	mapper_core* core = (mapper_core*)context;
 
-void mapper_core_setup(int keep_alive_time, int (*start_up)(void* context),
+	while(1){
+		if(core->stopped) return 0;
+
+		msg = (device_report_msg*)blocked_queue_pop(core->report_msg_queue, 1000);
+		if(!msg) continue;
+
+		ret = mcore_do_device_report(core, msg);
+		if(ret){
+			errorf("[Mapper: %s] do_device_report Send Request failed: %d \r\n", core->mapper_id, ret);
+		}
+		destory_device_report_msg(msg);
+	}
+}
+
+static void on_lost(void){
+	mcore.connected = 0;
+}
+
+static void on_connected(void){
+	mcore.connected = 1;
+	if(mcore.on_connected)
+		mcore.on_connected(&mcore);
+}
+
+void mapper_core_setup(int (*on_connected)(void* context),
 	int (*life_control)(char* action, devices_spec_meta* devs_spec),
 	int (*update_desired_twins)(device_desired_twins_update_msg* update_msg),
 	void (*keep_alive)(void)){
-
-	mcore.keep_alive_time = keep_alive_time;
-	mcore.start_up = start_up;
+	mcore.on_connected = on_connected;
 	mcore.life_control = life_control;
 	mcore.update_desired_twins = update_desired_twins;
 	mcore.keep_alive = keep_alive;
 }
-int mapper_core_init(char* svr_uri, char* usr, char* pwd, char* mapper_id){
-	int ret = 0;
-	
+
+int mapper_core_init(char* svr_uri, char* usr, char* pwd,
+			char* mapper_id, int pool_capacity, int keepalive_time){
+	int ret; 
+
+	//transport init
 	ret = transport_init(svr_uri, usr, pwd, mapper_id);
 	if(ret){
 		errorf("transport init failed with (%d) \r\n", ret);
 		return ret;
 	}
 
+	//maaper core init.
+	memset(&mcore, 0, sizeof(mcore));
 	mcore.stopped = 0;
-	mcore.el_mgr = create_el_manager();
-	if(!mcore.el_mgr){
-		errorf("create event listener manager failed \r\n");
+	mcore.connected = 0;
+	mcore.mapper_id = mapper_id;
+	mcore.keep_alive_time = keepalive_time;
+	mcore.report_msg_queue = blocked_queue_init();
+	if(!mcore.report_msg_queue){
+		errorf("create report_msg_queue failed \r\n");
 		transport_destory();
 		return -1;
 	}
 
-	mcore.th_pool = create_thread_pool(50);
+	mcore.el_mgr = create_el_manager();
+	if(!mcore.el_mgr){
+		errorf("create event listener manager failed \r\n");
+		transport_destory();
+		blocked_queue_destory(mcore.report_msg_queue);
+		return -1;
+	}
+	mcore.th_pool = create_thread_pool(pool_capacity);
 	if(mcore.th_pool == NULL){
 		errorf("create thread pool failed! \r\n");
 		destory_el_manager(mcore.el_mgr);
 		transport_destory();
+		blocked_queue_destory(mcore.report_msg_queue);
 		return -1;
 	}
 
@@ -134,14 +181,23 @@ int mapper_core_init(char* svr_uri, char* usr, char* pwd, char* mapper_id){
 	Thread_start(do_process_response, &mcore);
 	//start process request thread.
 	Thread_start(do_process_requests, &mcore);
+	//start device report thread.
+	Thread_start(do_device_report, &mcore);
 	//start keepalive thread.
 	Thread_start(do_keep_alive, &mcore);
 
-	//do start up function.
-	if(mcore.start_up)
-		return mcore.start_up(&mcore);
-
 	return 0;
+}
+
+int mapper_core_connect(){
+	return transport_connect(on_connected, on_lost);
+}
+
+
+void send_device_report_msg(device_report_msg* msg){
+	if(!msg) return;
+
+	blocked_queue_push(mcore.report_msg_queue, msg, sizeof(*msg));
 }
 
 void mapper_core_exit(){
@@ -149,5 +205,5 @@ void mapper_core_exit(){
 	destory_thread_pool(mcore.th_pool);
 	transport_destory();
 	destory_el_manager(mcore.el_mgr);
+	blocked_queue_destory(mcore.report_msg_queue);
 }
-

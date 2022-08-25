@@ -381,3 +381,209 @@ void destory_device_desired_twins_update_msg(device_desired_twins_update_msg* ms
 
 	free(msg);
 }
+
+/*
+* encode_devices_status_message:
+* we will'not free the msg after encode.
+*/
+char* encode_devices_status_message(devices_status_message* msg){
+	int i = 0;
+	char* payload = NULL;
+	cJSON* object = NULL;
+	cJSON* array = NULL;
+
+	if(!msg || msg->size <= 0) return NULL;
+
+	object = json_create_object();
+	if(!object) return NULL;
+
+	array = json_create_array();
+	if(!array){
+		json_delete(object);
+		return NULL;
+	}
+
+	for(i = 0; i < msg->size; i++){
+		device_status_msg* dev = &msg->devices[i];
+		cJSON* obj = json_create_object();
+
+		if(!obj) continue;
+
+		json_add_string_to_object(obj, "d_id", dev->device_id);
+		json_add_string_to_object(obj, "stat", dev->status);
+		json_add_string_to_object(obj, "err_msg", dev->err_msg);
+
+		json_add_object_to_array(array, obj);
+	}
+
+	json_add_object_to_object(object, "devs_stat", array);
+
+	payload = json_print(object);
+	if(!payload){
+		json_delete(object);
+		return NULL;
+	}
+
+	json_delete(object);
+
+	return payload;
+}
+
+static cJSON* encode_report_device_props_msg(report_device_props_msg* dev){
+	int i;
+	cJSON* object = json_create_object();
+	cJSON* array = NULL;
+
+	if(!object) return NULL;
+
+	array = json_create_array();
+	if(!array){
+		json_delete(object);
+		return NULL;
+	}
+
+	json_add_string_to_object(object, "d_id", dev->device_id);
+
+	for(i = 0; i < dev->size; i++){
+		twin_property* twin_prop = &dev->twin_properties[i];
+		cJSON* obj = json_create_object();
+
+		if(!obj) continue;
+
+		json_add_string_to_object(obj, "svc", twin_prop->service);
+		json_add_string_to_object(obj, "pn", twin_prop->property_name);
+		if(string_contain(twin_prop->data_type, "string")){
+			json_add_string_to_object(obj, "val", (char*)twin_prop->value);
+		}else if(string_contain(twin_prop->data_type, "int")){
+			int* pi = (int*)twin_prop->value;
+			json_add_number_to_object(obj, "val", *pi);
+		}else if(string_contain(twin_prop->data_type, "float") ||
+			string_contain(twin_prop->data_type, "double")){
+			double* pd = (double*)twin_prop->value;
+			json_add_number_to_object(obj, "val", *pd);
+		}else if(string_contain(twin_prop->data_type, "boolean")){
+			int* pb = (int*)twin_prop->value;
+			json_add_bool_to_object(obj, "val", *pb);
+		}
+		json_add_number_to_object(obj, "ts", twin_prop->timestamp);
+		json_add_string_to_object(obj, "err_msg", twin_prop->err_msg);
+
+		json_add_object_to_array(array, obj);
+	}
+	json_add_object_to_object(object, "svcs", array);
+
+	return object;
+}
+char* encode_devices_props_report_msg(devices_props_report_msg* msg){
+	int i = 0;
+	char* payload = NULL;
+	cJSON* object = NULL;
+	cJSON* array = NULL;
+
+	if(!msg || msg->size <= 0) return NULL;
+
+	object = json_create_object();
+	if(!object) return NULL;
+
+	array = json_create_array();
+	if(!array){
+		json_delete(object);
+		return NULL;
+	}
+
+	for(i = 0; i < msg->size; i++){
+		report_device_props_msg* dev = &msg->devices[i];
+		cJSON* obj = encode_report_device_props_msg(dev);
+
+		if(!obj) continue;
+		json_add_object_to_array(array, obj);
+	}
+	json_add_object_to_object(object, "devs", array);
+
+	payload = json_print(object);
+	if(!payload){
+		json_delete(object);
+		return NULL;
+	}
+
+	json_delete(object);
+
+	return payload;
+}
+
+char* encode_device_events_report_msg(device_events_report_msg* msg){
+	char* payload = NULL;
+	cJSON* object = NULL;
+
+	if(!msg) return NULL;
+
+	object = json_create_object();
+	if(!object) return NULL;
+
+	json_add_string_to_object(object, "d_id", msg->device_id);
+	json_add_string_to_object(object, "svc_n", msg->service);
+	json_add_string_to_object(object, "event_n", msg->event_name);
+	json_add_string_to_object(object, "details", msg->payload);
+	json_add_number_to_object(object, "ts", msg->timestamp);
+	json_add_string_to_object(object, "err_msg", msg->err_msg);
+
+	payload = json_print(object);
+	if(!payload){
+		json_delete(object);
+		return NULL;
+	}
+
+	json_delete(object);
+
+	return payload;
+}
+
+char* encode_device_report_msg(device_report_msg* msg){
+	if(!msg) return NULL;
+
+	if(msg->props_report_msg)
+		return encode_devices_props_report_msg(msg->props_report_msg);
+
+	if(msg->events_report_msg)
+		return encode_device_events_report_msg(msg->events_report_msg);
+
+	return NULL;
+}
+
+void destory_device_report_msg(device_report_msg* msg){
+	device_events_report_msg* derm = msg->events_report_msg;
+	devices_props_report_msg* dprm = msg->props_report_msg;
+
+	if(dprm){
+		if(dprm->size > 0 && dprm->devices){
+			int i = 0;
+
+			for(i = 0; i < dprm->size; i++){
+				int j = 0;
+				report_device_props_msg* dev = &dprm->devices[i];
+
+				if(!dev->twin_properties) continue;
+
+				for(j = 0; j < dev->size; j++){
+					twin_property* tp = &dev->twin_properties[j];
+					if(tp->value) free(tp->value);
+				}
+				free(dev->twin_properties);
+			}
+
+			free(dprm->devices);
+		}
+
+		free(dprm);
+		msg->props_report_msg = NULL;
+	}
+
+	if(derm){
+		if(derm->payload)
+			free(derm->payload);
+		free(derm);
+		msg->events_report_msg = NULL;
+	}
+
+	free(msg);
+}
