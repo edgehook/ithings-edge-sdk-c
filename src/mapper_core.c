@@ -200,6 +200,13 @@ void send_device_report_msg(device_report_msg* msg){
 	blocked_queue_push(mcore.report_msg_queue, msg, sizeof(*msg));
 }
 
+/*
+* submit a task into thread pool and run it.
+*/
+int submit_task(void (*func)(void* arg), void* arg){
+	return submit(mcore.th_pool, func, arg);
+}
+
 void mapper_core_exit(){
 	mcore.stopped = 1;
 	destory_thread_pool(mcore.th_pool);

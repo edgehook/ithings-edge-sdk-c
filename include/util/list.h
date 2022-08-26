@@ -88,6 +88,14 @@ int list_remove(list* alist, void* content);
  * @return 1=item removed, 0=item not removed
  */
 int list_delete(list* alist, void* content);
+/**
+ * Forward iteration through a list
+ * @param aList the list to which the operation is to be applied
+ * @param pos pointer to the current position in the list.  NULL means start from the beginning of the list
+ * This is updated on return to the same value as that returned from this function
+ * @return pointer to the current list element
+ */
+list_node* list_next_node(list* alist, list_node** pos);
 /*
 * find and pop content from the list head and remove the node.
 * @param aList the list from which the item is to be pop.

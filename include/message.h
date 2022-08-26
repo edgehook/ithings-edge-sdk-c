@@ -49,6 +49,12 @@ typedef struct {
 #define ITHINGS_OP_LIFE_CONTROL	"life_control"
 #define ITHINGS_OP_SET_PROPERTY	"set_property"
 
+#define DEVICE_LFCRTL_CREATE		"create"
+#define DEVICE_LFCRTL_START  	 	"start"
+#define DEVICE_LFCRTL_STOP  		"stop"
+#define DEVICE_LFCRTL_UPDATE 		"update"
+#define DEVICE_LFCRTL_DELETE 		"delete"
+
 #define ITHINGS_RSP_MAPPER_NOT_FOUND       "4.04"
 #define ITHINGS_RSP_OPERATION_NOT_FOUND    "4.05"
 #define ITHINGS_RSP_MAPPER_NOT_REGISTER    "4.06"

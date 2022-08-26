@@ -136,7 +136,7 @@ int mqtt_transport_publish(mqtt_transport* trans, char* topic, int qos, void* pa
 		return -1;
 	}
 
-	infof("mqtt.c publish payload = %s \r\n", payload);
+	//infof("mqtt.c publish payload = %s \r\n", payload);
 	pubmsg.payload = payload;
     pubmsg.payloadlen = payloadlen;
     pubmsg.qos = qos;
@@ -181,7 +181,7 @@ int on_msgarrvd(void* context, char* topicName, int topicLen, MQTTClient_message
 		return 1;
 	}
 
-	infof("payload length %d, payload = %s \r\n", payload_len, payload);
+	//infof("payload length %d, payload = %s \r\n", payload_len, payload);
 	if(trans->msgarrvd)
 		trans->msgarrvd(context, topicName, payload, payload_len);
 

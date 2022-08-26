@@ -2,6 +2,11 @@
 #define MAPPER_CORE_H
 
 #include <device.h>
+#include <message.h>
+#include <util/log.h>
+#include <util/util.h>
+#include <device.h>
+#include <transport.h>
 #include <util/thread_pool.h>
 #include <util/event_listener.h>
 
@@ -43,6 +48,10 @@ int register_protocol(char* spec);
 devices_spec_meta* fetch_device_metadata(void);
 int send_keepalive_msg(devices_status_message* msg);
 void send_device_report_msg(device_report_msg* msg);
+/*
+* submit a task into thread pool and run it.
+*/
+int submit_task(void (*func)(void* arg), void* arg);
 void mapper_core_exit();
 
 #endif

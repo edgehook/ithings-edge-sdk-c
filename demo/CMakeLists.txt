@@ -1,5 +1,6 @@
 SET(damo_src
 	demo.c
+    dev.c
 	)
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/src)
