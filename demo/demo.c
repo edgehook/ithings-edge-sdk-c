@@ -15,7 +15,7 @@ typedef struct {
 
 static devices_manager dev_mgr;
 
-int start_demo_device(devices_manager* mgr);
+int start_device(devices_manager* mgr, char* dev_id);
 
 
 int demo_on_connected(void* context){
