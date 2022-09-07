@@ -34,10 +34,18 @@ typedef struct {
 	char device_state[32];
 	char tags[128];
 	int online;
-	int size;
+	int size;	/* service count */
+	int prop_count;
+	int running;
+	int stopped;
+	int interval;
+	int timeout;
+	mutex_type  mutex;
 	demo_service* services;
 }demo_device;
 
 demo_device* create_demo_device(device_spec_meta* dev_spec);
 int start_demo_device(demo_device* dev);
+int stop_demo_device(demo_device* dev);
+void destory_demo_device(demo_device* dev);
 #endif

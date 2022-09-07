@@ -50,11 +50,14 @@ static demo_device* find_device(devices_manager* mgr, char* device_id){
 	return list_find_v2(mgr->devices, device_id, compare_device_id);	
 }
 
+static int remove_device(devices_manager* mgr, demo_device* dev){
+	return list_remove(mgr->devices, dev);
+}
+
 int add_device_from_device_meta(devices_manager* mgr, device_spec_meta* dev_spec){
 	demo_device* dev = NULL;
 
-	infof("device ID %s \r\n", dev_spec->device_id);
-	infof("device service count %d \r\n", dev_spec->size);
+	infof("Add device(%s).... \r\n", dev_spec->device_id);
 
 	dev = find_device(mgr, dev_spec->device_id);
 	if(dev){
@@ -78,22 +81,69 @@ int add_device_from_device_meta(devices_manager* mgr, device_spec_meta* dev_spec
 	return 0;
 }
 
+/*
+* Start device.
+*/
 int start_device(devices_manager* mgr, char* dev_id){
 	demo_device* dev = find_device(mgr, dev_id);
 
 	if(!dev) return -1;
-	infof("Start device(%s) .... \r\n", dev_id);
+
 	return start_demo_device(dev);
 }
 
+/*
+* Stop device.
+*/
 int stop_device(devices_manager* mgr, char* dev_id){
 	demo_device* dev = find_device(mgr, dev_id);
 
 	if(!dev) return -1;
-	infof("Stop device(%s) .... \r\n", dev_id);
+
+	return stop_demo_device(dev);
+}
+
+/*
+* Delete device.
+*/
+int delete_device(devices_manager* mgr, char* dev_id){
+	demo_device* dev = find_device(mgr, dev_id);
+
+	if(!dev) return 0;
+
+	remove_device(mgr, dev);
+	destory_demo_device(dev);
 	return 0;
 }
 
+int update_devices_from_device_meta(devices_manager* mgr, devices_spec_meta* devs_spec){
+	int i = 0, ret = 0;
+	demo_device* dev = NULL;
+
+	for(i = 0; i < devs_spec->size; i++){
+		device_spec_meta* dev_spec = &devs_spec->devices[i];
+
+		dev = find_device(mgr, dev_spec->device_id);
+		if(!dev){
+			ret = add_device_from_device_meta(mgr, dev_spec);
+			if(ret){
+				infof("Add device(%s) failed \r\n", dev_spec->device_id);
+			}
+		}else{
+			char* dev_id = dev_spec->device_id;
+
+			delete_device(mgr, dev_id);
+			ret = add_device_from_device_meta(mgr, dev_spec);
+			if(ret){
+				infof("update device(%s) failed \r\n", dev_spec->device_id);
+			}else{
+				start_device(mgr, dev_id);
+			}
+		}
+	}
+
+	return 0;
+}
 
 static int demo_life_control(char* action, devices_spec_meta* devs_spec){
 	int ret = 0;
@@ -106,17 +156,25 @@ static int demo_life_control(char* action, devices_spec_meta* devs_spec){
 	}else if(string_contain(action, DEVICE_LFCRTL_START)){
 		device_spec_meta* dev = devs_spec->devices;
 		if(dev){
+			infof("Start device(%s) .... \r\n", dev->device_id);
 			ret = start_device(&dev_mgr, dev->device_id);
 		}
 	}else if(string_contain(action, DEVICE_LFCRTL_STOP)){
 		device_spec_meta* dev = devs_spec->devices;
 		if(dev){
+			infof("Stop device(%s) .... \r\n", dev->device_id);
 			ret = stop_device(&dev_mgr, dev->device_id);
 		}
 	}else if(string_contain(action, DEVICE_LFCRTL_UPDATE)){
-
+		ret = update_devices_from_device_meta(&dev_mgr, devs_spec);
 	}else if(string_contain(action, DEVICE_LFCRTL_DELETE)){
-
+		device_spec_meta* dev = devs_spec->devices;
+		if(dev){
+			infof("Delete device(%s) .... \r\n", dev->device_id);
+			ret = delete_device(&dev_mgr, dev->device_id);
+		}
+	}else{
+		ret = -5;
 	}
 
 	destory_devices_spec_meta(devs_spec);
@@ -215,6 +273,7 @@ retry_fetch:
 		add_device_from_device_meta(&dev_mgr, dev_spec);
 	}
 	destory_devices_spec_meta(devs_spec);
+
 	while(1) {
 		util_sleep_v2(100000);
 		//report property.

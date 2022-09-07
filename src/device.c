@@ -249,7 +249,6 @@ void destory_devices_spec_meta(devices_spec_meta* meta){
 
 	if(meta->devices){
 		int size, i,j;
-
 		size = meta->size;
 		for(i = 0; i < size; i++){
 			device_spec_meta* dev = &meta->devices[i];
@@ -257,7 +256,7 @@ void destory_devices_spec_meta(devices_spec_meta* meta){
 			if(!dev->services) continue;
 
 			for(j = 0; j < dev->size; j++){
-				device_service_spec* svc = &dev->services[i];
+				device_service_spec* svc = &dev->services[j];
 
 				if(svc->properties) {
 					free(svc->properties);
@@ -568,10 +567,8 @@ void destory_device_report_msg(device_report_msg* msg){
 					twin_property* tp = &dev->twin_properties[j];
 					if(tp->value) free(tp->value);
 				}
-				free(dev->twin_properties);
+				free(dev);
 			}
-
-			free(dprm->devices);
 		}
 
 		free(dprm);
