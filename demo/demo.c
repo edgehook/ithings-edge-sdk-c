@@ -23,6 +23,7 @@ int demo_on_connected(void* context){
 
 retry_register:
 	/*
+	* 4. mqtt broker is connected. we register the protocol.
 	* If Apphub agent is restarted, then we need to register
 	* the protocol again. Or, we can't communicate with apphub
 	* agent.
@@ -233,6 +234,7 @@ void main(void){
 
 	infof(" ===========Start Main ==========\r\n");
 	/*
+	* 1. init mapper. 
 	* broker address: tcp://127.0.0.1:1884
 	* usr: NULL
 	* pwd: NULL
@@ -245,10 +247,12 @@ void main(void){
 		errorf("mapper core init failed %d \r\n", ret);
 		return ;
 	}
+	/* 2. Add setup  callback. */
 	mapper_core_setup(demo_on_connected, demo_life_control,
 				demo_update_desired_twins, demo_keep_alive);
 
 retry_connect:
+	/*3.  retry to connect the mqtt broker. */
 	ret = mapper_core_connect();
 	if(ret){
 		errorf("mapper core init failed %d \r\n", ret);
@@ -258,25 +262,26 @@ retry_connect:
 
 	util_sleep_v2(1000);
 retry_fetch:
+	/*5. Fetch device metadat. */
 	devs_spec = fetch_device_metadata();
 	if(!devs_spec){
 		warningf("fetch device failed\r\n");
 		goto retry_fetch;
 	}
 
-	infof("devs_spec->size = %d \r\n", devs_spec->size);
 	for(i = 0; i < devs_spec->size; i++){
 		demo_device* dev = NULL;
 		demo_device* tmp = NULL;
 		device_spec_meta* dev_spec = &devs_spec->devices[i];
-	
+
+		/* 6. Add device and start device and relative thread.*/
 		add_device_from_device_meta(&dev_mgr, dev_spec);
 	}
 	destory_devices_spec_meta(devs_spec);
 
 	while(1) {
 		util_sleep_v2(100000);
-		//report property.
+		//DO YOUR TASK.
 	}
 	mapper_core_exit();
 	list_destory(dev_mgr.devices);
