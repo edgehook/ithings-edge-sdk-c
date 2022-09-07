@@ -81,10 +81,10 @@ static thread_return_type WINAPI do_work_run(void* context){
 	while(1){
 		if(pool->stopped) break;
 
-		tsk = (task*)blocked_queue_pop(w->task_queue, 10000000);
+		tsk = (task*)blocked_queue_pop(w->task_queue, 600000);
 		if(tsk == NULL){
-			warningf("no data, we wait retry.... \r\n");
-			continue;
+			infof("no avaliable task, we exit the worker.... \r\n");
+			break;
 		}
 
 		if(tsk->func){

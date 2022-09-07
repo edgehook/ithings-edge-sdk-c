@@ -40,6 +40,7 @@ static int create_demo_service(demo_device* dev, demo_service* svc, device_servi
 		dev->prop_count += svc->properties_size;
 		svc->properties = (demo_property*)malloc(svc->properties_size*sizeof(demo_property));
 		if(svc->properties){
+			memset(svc->properties, 0, svc->properties_size*sizeof(demo_property));
 			for(i = 0; i < svc->properties_size; i++){
 				demo_property* prop = &svc->properties[i];
 				device_property_spec* prop_spec = &svc_spec->properties[i];
@@ -65,6 +66,7 @@ static int create_demo_service(demo_device* dev, demo_service* svc, device_servi
 		svc->events_size = svc_spec->events_size;
 		svc->events = (demo_event*)malloc(svc->events_size*sizeof(demo_event));
 		if(svc->events){
+			memset(svc->events, 0, svc->events_size*sizeof(demo_event));
 			for(i = 0; i < svc->events_size; i++){
 				demo_event * evt = &svc->events[i];
 				device_event_spec* evt_spec = &svc_spec->events[i];
@@ -339,6 +341,7 @@ void destory_demo_device(demo_device* dev){
 					if(prop->twin.value)
 						free(prop->twin.value);
 				}
+
 				free(svc->properties);
 			}
 			if(svc->events)
