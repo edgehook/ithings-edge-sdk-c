@@ -46,14 +46,15 @@
 
 #if defined(USE_SELECT)
 int isReady(int socket, fd_set* read_set, fd_set* write_set);
+int Socket_addSocket(int newSd);
 int Socket_continueWrites(fd_set* pwset, int* socket, mutex_type mutex);
 #else
 int isReady(int index);
+int Socket_addSocket(SOCKET newSd);
 int Socket_continueWrites(SOCKET* socket, mutex_type mutex);
 #endif
 int Socket_setnonblocking(SOCKET sock);
 int Socket_error(char* aString, SOCKET sock);
-int Socket_addSocket(SOCKET newSd);
 int Socket_writev(SOCKET socket, iobuf* iovecs, int count, unsigned long* bytes);
 int Socket_close_only(SOCKET socket);
 int Socket_continueWrite(SOCKET socket);

@@ -38,14 +38,15 @@ MESSAGE(STATUS "Timestamp is ${BUILD_TIMESTAMP}")
 
 IF(WIN32)
   ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE -DWIN32_LEAN_AND_MEAN)
+  ADD_DEFINITIONS(-D_WIN32_WINNT=0x601)
 ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
   ADD_DEFINITIONS(-DOSX)
 ENDIF()
 
 ## build options
-SET(PAHO_WITH_SSL FALSE CACHE BOOL "Flag that defines whether to build ssl-enabled binaries too. ")
+SET(PAHO_WITH_SSL TRUE CACHE BOOL "Flag that defines whether to build ssl-enabled binaries too. ")
 SET(PAHO_BUILD_SHARED TRUE CACHE BOOL "Build shared library")
-SET(PAHO_BUILD_STATIC FALSE CACHE BOOL "Build static library")
+SET(PAHO_BUILD_STATIC TRUE CACHE BOOL "Build static library")
 SET(PAHO_BUILD_DOCUMENTATION FALSE CACHE BOOL "Create and install the HTML based API documentation (requires Doxygen)")
 SET(PAHO_BUILD_SAMPLES FALSE CACHE BOOL "Build sample programs")
 SET(PAHO_BUILD_DEB_PACKAGE FALSE CACHE BOOL "Build debian package")
