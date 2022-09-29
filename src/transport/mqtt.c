@@ -1,6 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+#if defined(_WIN32) || defined(_WIN64)
+	#include <windows.h>
+#else
+	#include <unistd.h>
+#endif
 
 #include <transport.h>
 #include <util/log.h>

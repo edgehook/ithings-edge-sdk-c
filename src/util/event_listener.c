@@ -35,8 +35,6 @@ static void send_event_notify(event_listener* el, void* data, int length){
 * data.
 */
 void* wait_event(event_listener* el){
-	int ret;
-	
 	if(el == NULL) return NULL;
 
 	Thread_wait_sem(el->notify_sem, el->timeout_ms);

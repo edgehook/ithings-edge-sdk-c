@@ -1,6 +1,7 @@
 #ifndef _UTIL_LOG_H_
 #define _UTIL_LOG_H_
 
+#include "lib_api.h"
 #include "stdarg.h"
 
 typedef void (*PRINTF_LOG_CALLBACK_HANDLER)(int level, char *format, va_list args);
@@ -8,14 +9,14 @@ typedef void (*PRINTF_LOG_CALLBACK_HANDLER)(int level, char *format, va_list arg
 /*
 * set log callback.
 */
-void set_log_callback(PRINTF_LOG_CALLBACK_HANDLER cb);
+LIBAPI void set_log_callback(PRINTF_LOG_CALLBACK_HANDLER cb);
 //debug
-void debugf(char * _format, ...);
+LIBAPI void debugf(char * _format, ...);
 //info
-void infof(char * _format, ...);
+LIBAPI void infof(char * _format, ...);
 //warning
-void warningf(char * _format, ...);
+LIBAPI void warningf(char * _format, ...);
 //error.
-void errorf(char * _format, ...);
+LIBAPI void errorf(char * _format, ...);
 
 #endif

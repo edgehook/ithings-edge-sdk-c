@@ -3,8 +3,12 @@
 #include <stdarg.h>
 #include <string.h>
 #include <time.h>
+#if defined(_WIN32) || defined(_WIN64)
+	#include <windows.h>
+#else
+	#include <sys/time.h>
+#endif
 
-#include <sys/time.h>
 #include "util/util.h"
 
 #define EVENT_TIME_LENGTH 		16
@@ -139,11 +143,11 @@ int copy_str_value(char **dst, const char *src, int length) {
 	return 0;
 }
 
-unsigned  long long getTime() {
-	struct timeval tv;
-	gettimeofday(&tv,NULL);
-	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
-}
+//unsigned  long long getTime() {
+//	struct timeval tv;
+//	gettimeofday(&tv,NULL);
+//	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+//}
 
 
 //NOTE: the invocation need to free the return char pointer.
@@ -174,8 +178,8 @@ int GetSubStrIndex(const char *str, const char *substr) {
 	if (str == NULL || substr == NULL) {
 		return -1;
 	}
-	int len = strlen(str);
-	int subLen = strlen(substr);
+	int len = (int)strlen(str);
+	int subLen = (int)strlen(substr);
 	if (len == 0 || substr == 0 || subLen >= SUB_STERING_MAX_LENGTH) {
 		return -1;
 	}
@@ -198,7 +202,7 @@ char** string_split(const char* in, const char d){
 	char** result = 0;
 	int count = 0;
 	char* last_delim = 0;
-	char delim[2];
+	char delim[2] = {0};
 	char *s = util_strdup(in);
 	char* tmp = s;
 	

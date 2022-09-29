@@ -184,6 +184,8 @@ static int demo_life_control(char* action, devices_spec_meta* devs_spec){
 
 static int demo_update_desired_twins(device_desired_twins_update_msg* update_msg){
 	infof("demo_update_desired_twins update twins \r\n");
+
+	return 0;
 }
 
 static void demo_keep_alive(void){

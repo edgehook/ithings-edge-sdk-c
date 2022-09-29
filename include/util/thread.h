@@ -1,6 +1,8 @@
 #if !defined(THREAD_H)
 #define THREAD_H
 
+#include "lib_api.h"
+
 //define mutex_type
 #if defined(_WIN32) || defined(_WIN64)
 	#include <windows.h>
@@ -37,25 +39,25 @@ typedef cond_type_struct *cond_type;
   typedef sem_t *sem_type;
 #endif
 
-int Thread_create_cond(cond_type* condvar);
-int Thread_signal_cond(cond_type);
-int Thread_broadcast_cond(cond_type condvar);
-int Thread_wait_cond(cond_type condvar, int timeout);
-int Thread_destroy_cond(cond_type);
+LIBAPI int Thread_create_cond(cond_type* condvar);
+LIBAPI int Thread_signal_cond(cond_type);
+LIBAPI int Thread_broadcast_cond(cond_type condvar);
+LIBAPI int Thread_wait_cond(cond_type condvar, int timeout);
+LIBAPI int Thread_destroy_cond(cond_type);
 #endif
 
-void Thread_start(thread_fn, void*);
+LIBAPI void Thread_start(thread_fn, void*);
 
-int Thread_create_mutex(mutex_type* mutex);
-int Thread_lock_mutex(mutex_type);
-int Thread_unlock_mutex(mutex_type);
-int Thread_destroy_mutex(mutex_type);
+LIBAPI int Thread_create_mutex(mutex_type* mutex);
+LIBAPI int Thread_lock_mutex(mutex_type);
+LIBAPI int Thread_unlock_mutex(mutex_type);
+LIBAPI int Thread_destroy_mutex(mutex_type);
 
-thread_id_type Thread_getid();
+LIBAPI thread_id_type Thread_getid();
 
-int Thread_create_sem(sem_type* sem);
-int Thread_wait_sem(sem_type sem, int timeout);
-int Thread_check_sem(sem_type sem);
-int Thread_post_sem(sem_type sem);
-int Thread_destroy_sem(sem_type sem);
+LIBAPI int Thread_create_sem(sem_type* sem);
+LIBAPI int Thread_wait_sem(sem_type sem, int timeout);
+LIBAPI int Thread_check_sem(sem_type sem);
+LIBAPI int Thread_post_sem(sem_type sem);
+LIBAPI int Thread_destroy_sem(sem_type sem);
 #endif

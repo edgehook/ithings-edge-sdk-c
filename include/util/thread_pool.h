@@ -1,6 +1,7 @@
 #ifndef THREAD_POLL_H
 #define THREAD_POLL_H
 
+#include "lib_api.h"
 #include <util/thread.h>
 #include <util/list.h>
 #include <util/blockedqueue.h>
@@ -33,7 +34,7 @@ typedef struct {
 	int64_t			recycle_time;
 } worker;
 
-thread_pool* create_thread_pool(int capacity);
-int submit(thread_pool* pool, void (*func)(void* arg), void* arg);
-void destory_thread_pool(thread_pool* pool);
+LIBAPI thread_pool* create_thread_pool(int capacity);
+LIBAPI int submit(thread_pool* pool, void (*func)(void* arg), void* arg);
+LIBAPI void destory_thread_pool(thread_pool* pool);
 #endif

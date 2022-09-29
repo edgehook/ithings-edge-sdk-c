@@ -1,6 +1,7 @@
 #ifndef MAPPER_CORE_H
 #define MAPPER_CORE_H
 
+#include "lib_api.h"
 #include <device.h>
 #include <message.h>
 #include <util/log.h>
@@ -53,7 +54,7 @@ typedef struct {
 	void (*keep_alive)(void);
 } mapper_core;
 
-void core_init(void);
+LIBAPI void core_init(void);
 /*
 * mapper core call back setup.
 * on_connected: callback when mqtt connection is created.
@@ -61,7 +62,7 @@ void core_init(void);
 * update_desired_twins: set property value callback.
 * keep_alive: keep alive callback.
 */
-void mapper_core_setup(int (*on_connected)(void* context),
+LIBAPI void mapper_core_setup(int (*on_connected)(void* context),
 	int (*life_control)(char* action, devices_spec_meta* devs_spec),
 	int (*update_desired_twins)(device_desired_twins_update_msg* update_msg),
 	void (*keep_alive)(void));
@@ -78,7 +79,7 @@ void mapper_core_setup(int (*on_connected)(void* context),
 * pool_capacity: thread pool size(max thread we can start).
 * keepalive_time: how long time we send the ping to apphub Agent.
 */
-int mapper_core_init(char* svr_uri, char* usr, char* pwd,
+LIBAPI int mapper_core_init(char* svr_uri, char* usr, char* pwd,
 			char* mapper_id, int pool_capacity, int keepalive_time);
 /*
 * connect the mqtt broker.
@@ -88,7 +89,7 @@ int mapper_core_init(char* svr_uri, char* usr, char* pwd,
 * when connect is created, on_connected call back will
 * be called.
 */
-int mapper_core_connect();
+LIBAPI int mapper_core_connect();
 /*
 * register protocol to Apphub agent and Ithings server.
 * this function can call many times since if server consider a
@@ -97,7 +98,7 @@ int mapper_core_connect();
 * user should call this function to register to apphub agent. Or, the 
 * apphub agent can't  understand the mapper's message.
 */
-int register_protocol(char* spec);
+LIBAPI int register_protocol(char* spec);
 /*
 * When finshed register the protocol, user should call this function to get
 * all device metadata from server. user should create these device according
@@ -105,33 +106,33 @@ int register_protocol(char* spec);
 * When finished the creataion, user should start the device by the device's
 * state.
 */
-devices_spec_meta* fetch_device_metadata(void);
+LIBAPI devices_spec_meta* fetch_device_metadata(void);
 /*
 * Send keepalive message to Apphub Agent.
 * this message should contain all device's status.
 * online/offline.
 */
-int send_keepalive_msg(devices_status_message* msg);
+LIBAPI int send_keepalive_msg(devices_status_message* msg);
 /*
 * send device report message to ithings server.
 * this message will send into a blocked queue. msg should use
 * heap memory to store(malloc). After finshed send, the mapper 
 * core will free the msg automatically. it 's thread safety.
 */
-void send_device_report_msg(device_report_msg* msg);
+LIBAPI void send_device_report_msg(device_report_msg* msg);
 /*
 * submit a task into thread pool and run it.
 */
-int submit_task(void (*func)(void* arg), void* arg);
+LIBAPI int submit_task(void (*func)(void* arg), void* arg);
 
 /*
 * Do keep alive loop.
 */
-void do_keep_alive_loop(void);
+LIBAPI void do_keep_alive_loop(void);
 
 /*
 * exit mapper core.
 */
-void mapper_core_exit();
+LIBAPI void mapper_core_exit();
 
 #endif

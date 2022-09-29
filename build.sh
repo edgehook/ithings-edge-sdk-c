@@ -17,6 +17,7 @@ if [ "x$1" = "xclean" ];then
 fi
 
 cd  ${SRC_ROOT}
-cmake .
+cmake . -DCMAKE_INSTALL_PREFIX=${MQTT_INSTALL_PATH}/out
 
-make
+make 
+make install

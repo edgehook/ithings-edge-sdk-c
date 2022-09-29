@@ -107,8 +107,8 @@ static int decode_demo_dev_protoc_config(char* payload, int* it, int* timeout){
 
 	tmp = json_get_string_from_object(object, "timeout");
 	if(tmp && timeout){
-		sscanf(tmp, "%[0-9]%[a-Z]", b, a);
-		sscanf(b, "%d", timeout);
+		(void)sscanf(tmp, "%[0-9]%[a-Z]", b, a);
+		(void)sscanf(b, "%d", timeout);
 		if(!strcmp(a,"h")){
 			*timeout = *timeout*3600000;
 		}else if(!strcmp(tmp,"m")){
@@ -123,7 +123,7 @@ static int decode_demo_dev_protoc_config(char* payload, int* it, int* timeout){
 }
 
 demo_device* create_demo_device(device_spec_meta* dev_spec){
-	int i, ret, size;
+	int i, size;
 	demo_device* dev = NULL;
 
 	if(!dev_spec) return NULL;
@@ -174,7 +174,7 @@ demo_device* create_demo_device(device_spec_meta* dev_spec){
 int do_dummy_fetch(char* path, char* parms){
 	infof("path = %s, parms=%s \r\n", path, parms);
 
-	return get_timestamp();
+	return (int)get_timestamp();
 }
 
 void do_fetch_props_and_report(demo_device* dev){
@@ -318,8 +318,6 @@ retry_wait_stopped:
 }
 
 void destory_demo_device(demo_device* dev){
-	int ret;
-
 	if(dev->running){
 		stop_demo_device(dev);
 	}

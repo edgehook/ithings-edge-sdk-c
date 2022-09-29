@@ -252,4 +252,6 @@ int transport_destory(){
 	blocked_queue_destory(tp.resp_queue);
 	blocked_queue_destory(tp.req_queue);
 	blocked_queue_destory(tp.tx_queue);
+
+	return 0;
 }

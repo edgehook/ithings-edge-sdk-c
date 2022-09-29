@@ -8,8 +8,9 @@
 #include <sys/types.h>
 #include <sys/select.h>
 #endif
+#include <util/util.h>
 
-void util_sleep(uint64_t milliseconds){
+LIBAPI void util_sleep(uint64_t milliseconds){
 #if defined(_WIN32) || defined(_WIN64)
 	Sleep((DWORD)milliseconds);
 #else
@@ -17,7 +18,7 @@ void util_sleep(uint64_t milliseconds){
 #endif
 }
 
-void util_sleep_v2(long milliseconds){
+LIBAPI void util_sleep_v2(long milliseconds){
 	struct timeval tv;
 
 	if(!milliseconds) return;
@@ -28,7 +29,7 @@ void util_sleep_v2(long milliseconds){
 }
 
 
-int64_t get_time(void){
+LIBAPI int64_t get_time(void){
 #if defined(_WIN32)
 	FILETIME ft;
 
@@ -42,13 +43,13 @@ int64_t get_time(void){
 #endif
 }
 
-long long get_timestamp(void){
+LIBAPI long long get_timestamp(void){
 #if defined(_WIN32)
 	FILETIME ft;
 	long long t;
 
 	GetSystemTimeAsFileTime(&ft);
-	t = ((long long)ft.dwHighDateTime) << 32) + ft.dwLowDateTime;
+	t = (((long long)ft.dwHighDateTime) << 32) + ft.dwLowDateTime;
 	t -= 116444736000000000;
 	t = t/10000000;
 	return t;

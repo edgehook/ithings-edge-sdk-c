@@ -1,6 +1,8 @@
 #ifndef _DEVICE_H_
 #define _DEVICE_H_
 
+#include "lib_api.h"
+
 #define DEVICE_STATUS_ONLINE	"online"
 #define DEVICE_STATUS_OFFLINE 	"offline"
 
@@ -123,14 +125,14 @@ typedef struct {
 	device_events_report_msg* events_report_msg;
 }device_report_msg;
 
-devices_spec_meta* decode_devices_spec_meta(char* payload);
-void destory_devices_spec_meta(devices_spec_meta* meta);
-device_desired_twins_update_msg* decode_device_desired_twins_update_msg(char* payload);
-void destory_device_desired_twins_update_msg(device_desired_twins_update_msg* msg);
-char* encode_devices_status_message(devices_status_message* msg);
-char* encode_devices_props_report_msg(devices_props_report_msg* msg);
-char* encode_device_events_report_msg(device_events_report_msg* msg);
-char* encode_device_report_msg(device_report_msg* msg);
-void destory_device_report_msg(device_report_msg* msg);
+LIBAPI devices_spec_meta* decode_devices_spec_meta(char* payload);
+LIBAPI void destory_devices_spec_meta(devices_spec_meta* meta);
+LIBAPI device_desired_twins_update_msg* decode_device_desired_twins_update_msg(char* payload);
+LIBAPI void destory_device_desired_twins_update_msg(device_desired_twins_update_msg* msg);
+LIBAPI char* encode_devices_status_message(devices_status_message* msg);
+LIBAPI char* encode_devices_props_report_msg(devices_props_report_msg* msg);
+LIBAPI char* encode_device_events_report_msg(device_events_report_msg* msg);
+LIBAPI char* encode_device_report_msg(device_report_msg* msg);
+LIBAPI void destory_device_report_msg(device_report_msg* msg);
 
 #endif

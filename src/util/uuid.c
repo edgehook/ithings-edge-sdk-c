@@ -111,7 +111,7 @@ static void gen_rand_uuid(unsigned char *uuid_bin){
 	int* ptr = (int*)uuid;
 	int i;
 
-	srand(time(NULL) + rand());
+	srand((unsigned int)(time(NULL) + rand()));
 
 	/* Set all fields randomly */
 	for (i = 0; i < 16/sizeof(int); i++)
