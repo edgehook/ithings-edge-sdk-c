@@ -244,6 +244,62 @@ devices_spec_meta* decode_devices_spec_meta(char* payload){
 	return metas;
 }
 
+static void destory_service_properties_meta(device_property_spec* properties, int count){
+	int i = 0;
+	device_property_spec* ps = NULL;
+
+	if(!properties) return;
+
+	for(i = 0; i < count; i++){
+		ps = properties+i;
+		if(ps->access_config){
+			free(ps->access_config);
+			ps->access_config = NULL;
+		}
+	}
+
+	free(properties);
+}
+
+static void destory_service_events_meta(device_event_spec* events, int count){
+	int i = 0;
+	device_event_spec* es = NULL;
+
+	if(!events) return;
+
+	for(i = 0; i < count; i++){
+		es = events+i;
+		if(es->access_config){
+			free(es->access_config);
+			es->access_config = NULL;
+		}
+	}
+
+	free(events);
+}
+
+static void destory_service_commands_meta(device_command_spec* commands, int count){
+	int i = 0;
+	device_command_spec* cs = NULL;
+
+	if(!commands) return;
+
+	for(i = 0; i < count; i++){
+		cs = commands+i;
+
+		if(cs->parms){
+			free(cs->parms);
+			cs->parms = NULL;
+		}
+		if(cs->access_config){
+			free(cs->access_config);
+			cs->access_config = NULL;
+		}
+	}
+
+	free(commands);
+}
+
 void destory_devices_spec_meta(devices_spec_meta* meta){
 	if(!meta) return;
 
@@ -258,23 +314,14 @@ void destory_devices_spec_meta(devices_spec_meta* meta){
 			for(j = 0; j < dev->size; j++){
 				device_service_spec* svc = &dev->services[j];
 
-				if(svc->properties) {
-					free(svc->properties);
-					svc->properties = NULL;
-				}
-
-				if(svc->events){
-					free(svc->events);
-					svc->events = NULL;
-				}
-
-				if(svc->commands){
-					free(svc->commands);
-					svc->commands = NULL;
-				}
-
-				free(dev->services);
+				/* destory all properties and releative data.*/
+				destory_service_properties_meta(svc->properties, svc->properties_size);
+				/* destory all events and releative data. */
+				destory_service_events_meta(svc->events, svc->events_size);
+				/* destory all commands and releative data. */
+				destory_service_commands_meta(svc->commands, svc->commands_size);
 			}
+			free(dev->services);
 		}
 	}
 
