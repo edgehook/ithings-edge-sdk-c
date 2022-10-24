@@ -158,6 +158,7 @@ static void decode_device_spec_metadata(device_spec_meta* meta, cJSON* object){
 	memset(meta->services, 0, sizeof(device_service_spec)*meta->size);
 	for(i = 0; i < meta->size; i++){
 		cJSON* obj = NULL;
+		cJSON* array1 = NULL;
 		device_service_spec* svc = &meta->services[i];
 
 		obj = json_get_object_from_array(array, i);
@@ -167,17 +168,17 @@ static void decode_device_spec_metadata(device_spec_meta* meta, cJSON* object){
 		if(tmp == NULL) continue;
 		strncpy(svc->name, tmp, 63);
 
-		array = json_get_object_from_object(obj, "props");
-		if(array){
-			decode_device_properties_spec(array, svc);
+		array1 = json_get_object_from_object(obj, "props");
+		if(array1){
+			decode_device_properties_spec(array1, svc);
 		}
-		array = json_get_object_from_object(obj, "events");
-		if(array){
-			decode_device_event_spec(array, svc);
+		array1 = json_get_object_from_object(obj, "events");
+		if(array1){
+			decode_device_event_spec(array1, svc);
 		}
-		array = json_get_object_from_object(obj, "cmds");
-		if(array){
-			decode_device_command_spec(array, svc);
+		array1 = json_get_object_from_object(obj, "cmds");
+		if(array1){
+			decode_device_command_spec(array1, svc);
 		}
 	}
 }

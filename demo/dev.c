@@ -172,7 +172,7 @@ demo_device* create_demo_device(device_spec_meta* dev_spec){
 * we do a very simple fetch function.
 */
 int do_dummy_fetch(char* path, char* parms){
-	infof("path = %s, parms=%s \r\n", path, parms);
+	//infof("path = %s, parms=%s \r\n", path, parms);
 
 	return (int)get_timestamp();
 }

@@ -194,8 +194,6 @@ static void demo_keep_alive(void){
 	demo_device* dev = NULL;
 	device_status_msg* dev_msg;
 
-	infof("demo keepalive \r\n");
-
 	count = dev_mgr.devices->count;
 	msg.size = count;
 	msg.devices = (device_status_msg*)malloc(count*sizeof(device_status_msg));
@@ -221,10 +219,8 @@ static void demo_keep_alive(void){
 	}
 	msg.size = i;
 
-	ret = send_keepalive_msg(&msg);
-	if(ret){
-		errorf("send_keepalive_msg msg failed %d\r\n", ret);
-	}
+	//send keepalive message.
+	(void)send_keepalive_msg(&msg);
 
 	free(msg.devices);
 }
