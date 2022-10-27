@@ -19,6 +19,7 @@ typedef struct{
 */
 typedef struct{
 	list*	el_queue;
+	mutex_type mutex;
 } el_manager;
 
 LIBAPI el_manager* create_el_manager();

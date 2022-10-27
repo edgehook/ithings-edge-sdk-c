@@ -59,6 +59,13 @@ el_manager* create_el_manager(){
 		return NULL;
 	}
 
+	Thread_create_mutex(&elm->mutex);
+	if(!elm->mutex){
+		list_destory(elm->el_queue);
+		free(elm);
+		return NULL;
+	}
+
 	return elm;
 }
 
@@ -102,9 +109,12 @@ static void delete_event_listener(el_manager* elm, event_listener* el){
 //register the event listener.
 event_listener* register_event_listener(el_manager* elm, char* event_id, int timeout_ms){
 	int ret;
-	event_listener* el = create_event_listener (event_id, timeout_ms);
+	event_listener* el = NULL;
 
+	Thread_lock_mutex(elm->mutex);
+	el = create_event_listener (event_id, timeout_ms);
 	ret = put_event_listener(elm, el);
+	Thread_unlock_mutex(elm->mutex);
 	if(ret) return NULL;
 
 	return el;	
@@ -112,7 +122,9 @@ event_listener* register_event_listener(el_manager* elm, char* event_id, int tim
 
 //unregister the event listener.
 void unregister_event_listener(el_manager* elm, event_listener* el){
-	delete_event_listener(elm, el);	
+	Thread_lock_mutex(elm->mutex);
+	delete_event_listener(elm, el);
+	Thread_unlock_mutex(elm->mutex);
 }
 
 void match_event_and_dispatch(el_manager* elm, char* event_id, void* data, int length){

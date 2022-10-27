@@ -118,24 +118,6 @@ static thread_return_type WINAPI do_keep_alive(void* context){
 		util_sleep_v2(core->keep_alive_time);
 	}
 }
-static thread_return_type WINAPI do_device_report(void* context){
-	int ret;
-	device_report_msg* msg = NULL;
-	mapper_core* core = (mapper_core*)context;
-
-	while(1){
-		if(core->stopped) return 0;
-
-		msg = (device_report_msg*)blocked_queue_pop(core->report_msg_queue, 1000);
-		if(!msg) continue;
-
-		ret = mcore_do_device_report(core, msg);
-		if(ret){
-			errorf("[Mapper: %s] do_device_report Send Request failed: %d \r\n", core->mapper_id, ret);
-		}
-		destory_device_report_msg(msg);
-	}
-}
 
 static void on_lost(void){
 	mcore.connected = 0;
@@ -193,18 +175,11 @@ int mapper_core_init(char* svr_uri, char* usr, char* pwd,
 	mcore.connected = 0;
 	mcore.mapper_id = mapper_id;
 	mcore.keep_alive_time = keepalive_time;
-	mcore.report_msg_queue = blocked_queue_init();
-	if(!mcore.report_msg_queue){
-		errorf("create report_msg_queue failed \r\n");
-		transport_destory();
-		return -1;
-	}
 
 	mcore.el_mgr = create_el_manager();
 	if(!mcore.el_mgr){
 		errorf("create event listener manager failed \r\n");
 		transport_destory();
-		blocked_queue_destory(mcore.report_msg_queue);
 		return -1;
 	}
 	mcore.th_pool = create_thread_pool(pool_capacity);
@@ -212,7 +187,6 @@ int mapper_core_init(char* svr_uri, char* usr, char* pwd,
 		errorf("create thread pool failed! \r\n");
 		destory_el_manager(mcore.el_mgr);
 		transport_destory();
-		blocked_queue_destory(mcore.report_msg_queue);
 		return -1;
 	}
 
@@ -220,8 +194,6 @@ int mapper_core_init(char* svr_uri, char* usr, char* pwd,
 	Thread_start(do_process_response, &mcore);
 	//start process request thread.
 	Thread_start(do_process_requests, &mcore);
-	//start device report thread.
-	Thread_start(do_device_report, &mcore);
 	//start keepalive thread.
 	Thread_start(do_keep_alive, &mcore);
 
@@ -242,14 +214,20 @@ int mapper_core_connect(){
 
 /*
 * send device report message to ithings server.
-* this message will send into a blocked queue. msg should use
+* this message will send into mqtt tx blocked queue. msg should use
 * heap memory to store(malloc). After finshed send, the mapper 
 * core will free the msg automatically. it 's thread safety.
 */
 void send_device_report_msg(device_report_msg* msg){
+	int ret;
+
 	if(!msg) return;
 
-	blocked_queue_push(mcore.report_msg_queue, msg, sizeof(*msg));
+	ret = mcore_do_device_report(&mcore, msg);
+	if(ret){
+		errorf("[Mapper: %s] do_device_report Send Request failed: %d \r\n", mcore.mapper_id, ret);
+	}
+	destory_device_report_msg(msg);
 }
 
 /*
@@ -267,5 +245,4 @@ void mapper_core_exit(){
 	destory_thread_pool(mcore.th_pool);
 	transport_destory();
 	destory_el_manager(mcore.el_mgr);
-	blocked_queue_destory(mcore.report_msg_queue);
 }

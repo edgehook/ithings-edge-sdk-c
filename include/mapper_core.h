@@ -21,7 +21,6 @@ typedef struct {
 	char* 			mapper_id;		//mapper_id.
 	el_manager* 	el_mgr;
 	thread_pool* 	th_pool;
-	blocked_queue*	report_msg_queue;
 
 	/*
 	* callback when mqtt connection is created.

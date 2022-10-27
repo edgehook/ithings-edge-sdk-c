@@ -235,10 +235,10 @@ static int list_unlink_node(list* alist, void* content, int(*callback)(void*, vo
 		next = node->next;
 		alist->current = next;
 	}
-	free(node);
 
 	(alist->count)--;
 	alist->size -= (node->size + sizeof(list_node));
+	free(node);
 
 	return 1;
 }

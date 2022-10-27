@@ -137,8 +137,6 @@ int update_devices_from_device_meta(devices_manager* mgr, devices_spec_meta* dev
 			ret = add_device_from_device_meta(mgr, dev_spec);
 			if(ret){
 				infof("update device(%s) failed \r\n", dev_spec->device_id);
-			}else{
-				start_device(mgr, dev_id);
 			}
 		}
 	}
