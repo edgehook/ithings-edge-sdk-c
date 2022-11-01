@@ -13,26 +13,32 @@ void set_log_callback(PRINTF_LOG_CALLBACK_HANDLER cb) {
 static void printf_log(int level, char * _format, va_list args){
 	char *fmt = NULL;
 	char *prefix = NULL;
+	char times[68]={0};
+	__time_info info;
+
+	//get the local time.
+	get_local_time(&info);
+	snprintf(times, 64, "%d:%d:%d.%06d ",info.Hour, info.Minute, info.Second, info.Milliseconds);
 
 	switch(level){
 	case 0:
-		prefix = "DEBUG ";
+		prefix = "DEBUG:";
 		break;
 	case 1:
-		prefix = "INFO ";
+		prefix = "INFO:";
 		break;
 	case 2:
-		prefix = "WARNING ";
+		prefix = "WARNING:";
 		break;
 	case 3:
-		prefix = "ERROR ";
+		prefix = "ERROR:";
 		break;
 	case 4:
-		prefix = "U ";
+		prefix = "U:";
 		break;
 	}
 
-	fmt = combine_strings(2, prefix, _format);
+	fmt = combine_strings(3, prefix, times, _format);
 
 	if(log_callback){
 		log_callback(level, fmt, args);

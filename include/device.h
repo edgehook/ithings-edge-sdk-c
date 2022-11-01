@@ -2,6 +2,7 @@
 #define _DEVICE_H_
 
 #include "lib_api.h"
+#include <stdint.h>
 
 #define DEVICE_STATUS_ONLINE	"online"
 #define DEVICE_STATUS_OFFLINE 	"offline"
@@ -72,7 +73,7 @@ typedef struct{
 	char service[64];
 	char property_name[128];
 	void* value;
-	int timestamp;
+	uint64_t timestamp;
 	char err_msg[128];
 	int writeable;
 	double max;

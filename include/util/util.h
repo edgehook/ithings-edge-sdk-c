@@ -4,11 +4,23 @@
 #include "lib_api.h"
 #include <stdint.h>
 
+typedef struct {
+	int Year;
+	int Month;
+	int DayOfWeek;
+	int Day;
+    int Hour;
+	int Minute;
+	int Second;
+	int Milliseconds;
+}__time_info;
+
+LIBAPI void get_local_time(__time_info* info);
 LIBAPI void util_sleep(uint64_t milliseconds);
 LIBAPI void util_sleep_v2(long milliseconds);
 
 LIBAPI int64_t get_time(void);
-LIBAPI long long get_timestamp(void);
+LIBAPI uint64_t get_timestamp(void);
 
 //for uuid v4.
 LIBAPI void gen_rand_uuid_str(char *uuid_str, int str_format);

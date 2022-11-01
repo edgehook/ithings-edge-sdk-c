@@ -225,7 +225,7 @@ int transport_publish(mqtt_transport* trans, char* topic, char*payload, int payl
 	if(topic == NULL || payload == NULL) return -1;
 
 retry_pub:
-	ret = mqtt_transport_publish(trans, topic, 1, payload, payloadlen);
+	ret = mqtt_transport_publish(trans, topic, 0, payload, payloadlen);
 	if(ret){
 		if(retries >= 3) return ret;
 
