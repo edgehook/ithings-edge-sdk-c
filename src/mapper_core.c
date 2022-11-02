@@ -218,16 +218,18 @@ int mapper_core_connect(){
 * heap memory to store(malloc). After finshed send, the mapper 
 * core will free the msg automatically. it 's thread safety.
 */
-void send_device_report_msg(device_report_msg* msg){
-	int ret;
+int send_device_report_msg(device_report_msg* msg){
+	int ret = -1;
 
-	if(!msg) return;
+	if(!msg) return ret;
 
 	ret = mcore_do_device_report(&mcore, msg);
 	if(ret){
 		errorf("[Mapper: %s] do_device_report Send Request failed: %d \r\n", mcore.mapper_id, ret);
 	}
 	destory_device_report_msg(msg);
+
+	return ret;
 }
 
 /*

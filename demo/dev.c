@@ -146,6 +146,9 @@ demo_device* create_demo_device(device_spec_meta* dev_spec){
 
 	decode_demo_dev_protoc_config(dev_spec->protocol, &dev->interval, &dev->timeout);
 	dev->interval = dev->interval <= 0 ? 5000: dev->interval;
+	//reserve 200ms  for mqtt transfor times.
+	dev->interval = dev->interval > 200 ? dev->interval-200 : 1;
+
 	Thread_create_mutex(&dev->mutex);
 	if(!dev->mutex){
 		free(dev);
@@ -253,7 +256,7 @@ void do_fetch_props_and_report(demo_device* dev){
 	}
 
 	//send report message.
-	send_device_report_msg(report_msg);
+	(void)send_device_report_msg(report_msg);
 }
 void start_colloct_and_report_data(void* content){
 	demo_device* dev = (demo_device*)content;

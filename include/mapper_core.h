@@ -118,7 +118,7 @@ LIBAPI int send_keepalive_msg(devices_status_message* msg);
 * heap memory to store(malloc). After finshed send, the mapper 
 * core will free the msg automatically. it 's thread safety.
 */
-LIBAPI void send_device_report_msg(device_report_msg* msg);
+LIBAPI int send_device_report_msg(device_report_msg* msg);
 /*
 * submit a task into thread pool and run it.
 */

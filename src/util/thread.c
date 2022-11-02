@@ -172,16 +172,11 @@ int Thread_wait_sem(sem_type sem, int timeout){
  */
 	int rc = -1;
 #if !defined(_WIN32) && !defined(_WIN64) && !defined(OSX)
-#define USE_TRYWAIT
-#if defined(USE_TRYWAIT)
 	int i = 0;
-	useconds_t interval = 10000; /* 10000 microseconds: 10 milliseconds */
+	useconds_t interval = 1000; /* 1000 microseconds: 1 milliseconds */
 	int count = (1000 * timeout) / interval; /* how many intervals in timeout period */
-#else
 	struct timespec ts;
 #endif
-#endif
-
 
 #if defined(_WIN32) || defined(_WIN64)
 	/* returns 0 (WAIT_OBJECT_0) on success, non-zero (WAIT_TIMEOUT) if timeout occurred */
@@ -193,24 +188,22 @@ int Thread_wait_sem(sem_type sem, int timeout){
 	rc = (int)dispatch_semaphore_wait(sem, dispatch_time(DISPATCH_TIME_NOW, (int64_t)timeout*1000000L));
 	if (rc != 0)
 		rc = ETIMEDOUT;
-#elif defined(USE_TRYWAIT)
-	while (i++ < count && (rc = sem_trywait(sem)) != 0)	{
-		if (rc == -1 && ((rc = errno) != EAGAIN))
-		{
-			rc = 0;
-			break;
-		}
-		usleep(interval); /* microseconds - .1 of a second */
-	}
 #else
 	/* We have to use CLOCK_REALTIME rather than MONOTONIC for sem_timedwait interval.
 	 * Does this make it susceptible to system clock changes?
 	 * The intervals are small enough, and repeated, that I think it's not an issue.
 	 */
-	if (clock_gettime(CLOCK_REALTIME, &ts) != -1)
-	{
+	if (clock_gettime(CLOCK_REALTIME, &ts) == 0){
 		ts.tv_sec += timeout;
 		rc = sem_timedwait(sem, &ts);
+	}else{
+		while (i++ < count && (rc = sem_trywait(sem)) != 0)	{
+			if (rc == -1 && ((rc = errno) != EAGAIN)){
+				rc = 0;
+				break;
+			}
+			usleep(interval); /* microseconds - .1 of a second */
+		}
 	}
 #endif
 
@@ -253,11 +246,7 @@ int Thread_post_sem(sem_type sem){
 #elif defined(OSX)
 	rc = (int)dispatch_semaphore_signal(sem);
 #else
-	int val;
-	int rc1 = sem_getvalue(sem, &val);
-	if (rc1 != 0)
-		rc = errno;
-	else if (val == 0 && sem_post(sem) == -1)
+	if (sem_post(sem) != 0)
 		rc = errno;
 #endif
 
