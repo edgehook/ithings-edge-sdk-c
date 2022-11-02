@@ -223,12 +223,13 @@ static void demo_keep_alive(void){
 	free(msg.devices);
 }
 
-void main(void){
+void main(int argc, char *argv[]){
 	int i, ret;
 
-	dev_mgr.devices = list_init();
-
+	fprintf(stdout, "============ %s (compiled %s) =========== \n", argv[0], __DATE__);
 	infof(" ===========Start Main ==========\r\n");
+
+	dev_mgr.devices = list_init();
 	/*
 	* 1. init mapper. 
 	* broker address: tcp://127.0.0.1:1884
