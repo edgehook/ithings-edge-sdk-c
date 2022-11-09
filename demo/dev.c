@@ -177,7 +177,7 @@ demo_device* create_demo_device(device_spec_meta* dev_spec){
 int do_dummy_fetch(char* path, char* parms){
 	//infof("path = %s, parms=%s \r\n", path, parms);
 
-	return (int)get_timestamp();
+	return (int)(get_timestamp()/1000);
 }
 
 void do_fetch_props_and_report(demo_device* dev){
