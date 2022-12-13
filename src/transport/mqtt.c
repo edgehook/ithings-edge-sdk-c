@@ -10,6 +10,12 @@
 #include <util/log.h>
 #include "util/util.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <io.h>
+
+#define access(pathname, mode) _access(pathname, mode)
+#endif
+
 void on_connlost(void* context, char* cause);
 int on_msgarrvd(void* context, char* topicName, int topicLen, MQTTClient_message* message);
 

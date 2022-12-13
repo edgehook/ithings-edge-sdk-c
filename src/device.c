@@ -512,7 +512,7 @@ static cJSON* encode_report_device_props_msg(report_device_props_msg* dev){
 			int* pb = (int*)twin_prop->value;
 			json_add_bool_to_object(obj, "val", *pb);
 		}
-		json_add_number_to_object(obj, "ts", twin_prop->timestamp);
+		json_add_number_to_object(obj, "ts", (double)twin_prop->timestamp);
 		json_add_string_to_object(obj, "err_msg", twin_prop->err_msg);
 
 		json_add_object_to_array(array, obj);

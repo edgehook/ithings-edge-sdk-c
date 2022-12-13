@@ -187,7 +187,7 @@ static int demo_update_desired_twins(device_desired_twins_update_msg* update_msg
 }
 
 static void demo_keep_alive(void){
-	int ret, count, i = 0;
+	int count, i = 0;
 	list_node* current = NULL;
 	demo_device* dev = NULL;
 	device_status_msg* dev_msg;
