@@ -147,7 +147,7 @@ demo_device* create_demo_device(device_spec_meta* dev_spec){
 	decode_demo_dev_protoc_config(dev_spec->protocol, &dev->interval, &dev->timeout);
 	dev->interval = dev->interval <= 0 ? 5000: dev->interval;
 	//reserve 200ms  for mqtt transfor times.
-	dev->interval = dev->interval > 200 ? dev->interval-200 : 1;
+	dev->interval = dev->interval > 200 ? dev->interval-200 : 200;
 
 	Thread_create_mutex(&dev->mutex);
 	if(!dev->mutex){

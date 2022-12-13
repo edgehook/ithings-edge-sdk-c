@@ -12,7 +12,7 @@ typedef struct {
     int Hour;
 	int Minute;
 	int Second;
-	int Milliseconds;
+	int Milliseconds; //us
 }__time_info;
 
 LIBAPI void get_local_time(__time_info* info);

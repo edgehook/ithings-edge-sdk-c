@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <time.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+#endif
 
 #define UUID_STR_FORMAT_STD     0
 #define UUID_STR_FORMAT_GUID    0
@@ -99,6 +103,21 @@ static void uuid_bin_to_str(unsigned char *uuid_bin, char *uuid_str, int str_for
 	}
 }
 
+static uint64_t get_time_ms(void) {
+#if defined(_WIN32)
+	FILETIME ft;
+	long long t;
+
+	GetSystemTimeAsFileTime(&ft);
+	t = (((long long)ft.dwHighDateTime) << 32) + ft.dwLowDateTime;
+	t -= 116444736000000000;
+	t = t / 10000;
+	return t;
+#else
+	return time(NULL);
+#endif	
+}
+
 /*
  * gen_rand_uuid() - this function generates a random binary UUID version 4.
  *                   In this version all fields beside 4 bits of version and
@@ -111,7 +130,7 @@ static void gen_rand_uuid(unsigned char *uuid_bin){
 	int* ptr = (int*)uuid;
 	int i;
 
-	srand((unsigned int)(time(NULL) + rand()));
+	srand((unsigned int)(get_time_ms() + rand()));
 
 	/* Set all fields randomly */
 	for (i = 0; i < 16/sizeof(int); i++)

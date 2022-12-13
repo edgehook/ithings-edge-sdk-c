@@ -19,6 +19,9 @@ LIBAPI void util_sleep(uint64_t milliseconds){
 }
 
 LIBAPI void util_sleep_v2(long milliseconds){
+#if defined(_WIN32) || defined(_WIN64)
+	Sleep((DWORD)milliseconds);
+#else
 	struct timeval tv;
 
 	if(!milliseconds) return;
@@ -26,6 +29,7 @@ LIBAPI void util_sleep_v2(long milliseconds){
 	tv.tv_sec = milliseconds / 1000;
 	tv.tv_usec = (milliseconds % 1000) * 1000; /* this field is microseconds! */
 	(void)select(0, NULL, NULL, NULL, &tv);
+#endif
 }
 
 
@@ -51,7 +55,7 @@ LIBAPI uint64_t get_timestamp(void){
 	GetSystemTimeAsFileTime(&ft);
 	t = (((long long)ft.dwHighDateTime) << 32) + ft.dwLowDateTime;
 	t -= 116444736000000000;
-	t = t/10000000;
+	t = t/10000;
 	return t;
 #else
 	return time(NULL)*1000;
@@ -70,7 +74,7 @@ LIBAPI void get_local_time(__time_info* info){
 		info->Hour = localSysTime.wHour;
 		info->Minute = localSysTime.wMinute;
 		info->Second = localSysTime.wSecond;
-		info->Milliseconds = localSysTime.wMilliseconds;
+		info->Milliseconds = localSysTime.wMilliseconds*1000;
 	}
 #else
 	struct tm *ctm;
