@@ -166,7 +166,7 @@ char* get_client_timestamp() {
 		return NULL;
 	} else {
 		StrMemSet(dest_str, 0, CLIENT_TIME_LENGTH + 1);
-		snprintf(dest_str, CLIENT_TIME_LENGTH + 1, "%d%.2d%.2d%.2d", lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday, lt->tm_hour);
+		snprintf(dest_str, CLIENT_TIME_LENGTH + 1, "%d%.2d%.2d%.2d", (lt->tm_year + 1900)%10000u, (lt->tm_mon + 1)%100u, lt->tm_mday%100u, lt->tm_hour%100u);
 		return dest_str;
 	}
 }

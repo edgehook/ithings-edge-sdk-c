@@ -137,7 +137,7 @@ static void decode_device_spec_metadata(device_spec_meta* meta, cJSON* object){
 	}
 	tmp = json_get_string_from_object(object, "state");
 	if(tmp){
-		strncpy(meta->device_state, tmp, 63);
+		strncpy(meta->device_state, tmp, 31);
 	}
 	tmp = json_get_string_from_object(object, "tags");
 	if(tmp){
