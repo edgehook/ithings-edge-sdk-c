@@ -175,6 +175,7 @@ int Thread_wait_sem(sem_type sem, int timeout){
 	int i = 0;
 	useconds_t interval = 1000; /* 1000 microseconds: 1 milliseconds */
 	int count = (1000 * timeout) / interval; /* how many intervals in timeout period */
+	int seconds = timeout/1000;
 	struct timespec ts;
 #endif
 
@@ -194,10 +195,11 @@ int Thread_wait_sem(sem_type sem, int timeout){
 	 * The intervals are small enough, and repeated, that I think it's not an issue.
 	 */
 	if (clock_gettime(CLOCK_REALTIME, &ts) == 0){
-		ts.tv_sec += timeout;
+		seconds = seconds == 0 ? 1 : seconds;
+		ts.tv_sec += seconds;
 		rc = sem_timedwait(sem, &ts);
 	}else{
-		while (i++ < count && (rc = sem_trywait(sem)) != 0)	{
+		while (i++ < count && (rc = sem_trywait(sem)) != 0){
 			if (rc == -1 && ((rc = errno) != EAGAIN)){
 				rc = 0;
 				break;

@@ -16,7 +16,7 @@ typedef struct {
 static devices_manager dev_mgr;
 
 int start_device(devices_manager* mgr, char* dev_id);
-
+int delete_device(devices_manager* mgr, char* dev_id);
 
 int demo_on_connected(void* context){
 	int ret;
@@ -33,6 +33,7 @@ retry_register:
 		errorf("register mapper failed %d \r\n", ret);
 		goto retry_register;
 	}
+	infof("register mapper(demo) successfully! \r\n");
 
 	return 0;
 }
@@ -63,7 +64,7 @@ int add_device_from_device_meta(devices_manager* mgr, device_spec_meta* dev_spec
 	dev = find_device(mgr, dev_spec->device_id);
 	if(dev){
 		warningf("device(%s) already exist! \r\n", dev_spec->device_id);
-		return -1;
+		(void)delete_device(mgr, dev_spec->device_id);
 	}
 
 	dev = create_demo_device(dev_spec);
@@ -258,23 +259,6 @@ retry_connect:
 	infof("======  mapper connect successfully! =========\r\n");
 
 	util_sleep_v2(1000);
-retry_fetch:
-	/*5. Fetch device metadat. */
-	devs_spec = fetch_device_metadata();
-	if(!devs_spec){
-		warningf("fetch device failed\r\n");
-		goto retry_fetch;
-	}
-
-	for(i = 0; i < devs_spec->size; i++){
-		demo_device* dev = NULL;
-		demo_device* tmp = NULL;
-		device_spec_meta* dev_spec = &devs_spec->devices[i];
-
-		/* 6. Add device and start device and relative thread.*/
-		add_device_from_device_meta(&dev_mgr, dev_spec);
-	}
-	destory_devices_spec_meta(devs_spec);
 
 	while(1) {
 		util_sleep_v2(100000);

@@ -83,7 +83,7 @@ int mcore_register_protocol(mapper_core* core, char* mapper_id, char* spec){
 /*
 * fetch device metadata from server.
 */
-devices_spec_meta* mcore_fetch_device_metadata(mapper_core* core, char* mapper_id){
+/*devices_spec_meta* mcore_fetch_device_metadata(mapper_core* core, char* mapper_id){
 	request_msg* req = NULL;
 	response_msg* resp = NULL;
 	devices_spec_meta* devs_spec = NULL;
@@ -104,7 +104,7 @@ devices_spec_meta* mcore_fetch_device_metadata(mapper_core* core, char* mapper_i
 	free_response(&resp);
 
 	return devs_spec;
-}
+}*/
 
 //do real life control.
 int mcore_do_life_control(mapper_core* core, char* action, char* payload){

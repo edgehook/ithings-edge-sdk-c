@@ -28,17 +28,6 @@ int register_protocol(char* spec){
 }
 
 /*
-* When finshed register the protocol, user should call this function to get
-* all device metadata from server. user should create these device according
-* to the devices_spec_meta.
-* When finished the creataion, user should start the device by the device's
-* state.
-*/
-devices_spec_meta* fetch_device_metadata(void){
-	return mcore_fetch_device_metadata(&mcore, mcore.mapper_id);
-}
-
-/*
 * Send keepalive message to Apphub Agent.
 * this message should contain all device's status.
 * online/offline.
